@@ -1,0 +1,3 @@
+[submodule "src/abb_experimental"]
+	path = src/abb_experimental
+	url = https://github.com/ros-industrial/abb_experimental
