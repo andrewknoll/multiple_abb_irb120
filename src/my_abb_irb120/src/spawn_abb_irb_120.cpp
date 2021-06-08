@@ -54,6 +54,7 @@ int main(int argc, char** argv)
   ros::NodeHandle node_handle;
   ros::AsyncSpinner spinner(1);
   spinner.start();
+std::cout << "Cp0" << std::endl;
 
   // BEGIN_TUTORIAL
   //
@@ -77,18 +78,22 @@ int main(int argc, char** argv)
   const robot_state::JointModelGroup* joint_model_group =
       move_group.getCurrentState()->getJointModelGroup(PLANNING_GROUP);
 
+      std::cout << "CP1" << std::endl;
+
   // Visualization
   // ^^^^^^^^^^^^^
   //
   // The package MoveItVisualTools provides many capabilties for visualizing objects, robots,
   // and trajectories in RViz as well as debugging tools such as step-by-step introspection of a script
   namespace rvt = rviz_visual_tools;
-  moveit_visual_tools::MoveItVisualTools visual_tools("base_link0");
+  moveit_visual_tools::MoveItVisualTools visual_tools("base_link");
   visual_tools.deleteAllMarkers();
+  std::cout << "CP2" << std::endl;
 
   // Remote control is an introspection tool that allows users to step through a high level script
   // via buttons and keyboard shortcuts in RViz
   visual_tools.loadRemoteControl();
+  std::cout << "CP3" << std::endl;
 
   // RViz provides many types of markers, in this demo we will use text, cylinders, and spheres
   Eigen::Isometry3d text_pose = Eigen::Isometry3d::Identity();
@@ -115,7 +120,7 @@ int main(int argc, char** argv)
   // Start the demo
   // ^^^^^^^^^^^^^^^^^^^^^^^^^
   visual_tools.prompt("Press 'next' in the RvizVisualToolsGui window to start the demo");
-
+std::cout << "CP4" << std::endl;
   // .. _move_group_interface-planning-to-pose-goal:
   //
   // Planning to a Pose goal
@@ -197,8 +202,8 @@ int main(int argc, char** argv)
   // Let's specify a path constraint and a pose goal for our group.
   // First define the path constraint.
   moveit_msgs::OrientationConstraint ocm;
-  ocm.link_name = "base_link7";
-  ocm.header.frame_id = "base_link0";
+  ocm.link_name = "link_6";
+  ocm.header.frame_id = "base_link";
   ocm.orientation.w = 1.0;
   ocm.absolute_x_axis_tolerance = 0.1;
   ocm.absolute_y_axis_tolerance = 0.1;
