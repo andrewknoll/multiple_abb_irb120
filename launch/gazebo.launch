@@ -1,0 +1,25 @@
+ <launch>
+<!-- startup simulated world -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="worlds/empty.world"/>
+  </include>
+
+  <!-- need to parse xacro files in order to import them to the code -->
+  <include file="$(find abb_irb120_gazebo)/launch/load_irb120_3_58.launch" />
+
+<!-- push robot_description to factory and spawn robot in gazebo -->
+  <node name="abb_irb120_spawn" pkg="gazebo_ros" type="spawn_model" output="screen" args="-urdf -param robot_description -model abb_irb120_3_58" />
+
+    <!-- convert joint states to TF transforms for rviz, etc -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
+  output="screen">
+  </node>
+
+  <!-- init and start Gazebo ros_control interface -->
+  <include file="$(find abb_irb120_gazebo)/launch/irb120_3_58_control.launch"/>
+
+  <include file="$(find abb_irb120_moveit_config)/launch/planning_context.launch">
+    <arg name="load_robot_description" value="false" />
+  </include>
+
+</launch>

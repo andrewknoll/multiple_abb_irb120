@@ -1,0 +1,13 @@
+CMakeCache.txt
+cmake_install.cmake
+CTestConfiguration.ini
+CTestCustom.cmake
+Makefile
+
+test_results/
+atomic_configure/
+catkin/
+catkin_generated/
+cmake/
+CMakeFiles/
+gtest/
