@@ -1,6 +1,7 @@
 CMakeCache.txt
 cmake_install.cmake
 CTestConfiguration.ini
+CTestTestfile.cmake
 CTestCustom.cmake
 Makefile
 
