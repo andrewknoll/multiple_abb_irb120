@@ -12,3 +12,4 @@ catkin_generated/
 cmake/
 CMakeFiles/
 gtest/
+devel/
