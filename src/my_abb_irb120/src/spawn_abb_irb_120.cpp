@@ -70,7 +70,6 @@ int main(int argc, char** argv)
   ros::NodeHandle node_handle;
   ros::AsyncSpinner spinner(1);
   spinner.start();
-std::cout << "Cp0" << std::endl;
 
   // BEGIN_TUTORIAL
   //
@@ -94,8 +93,6 @@ std::cout << "Cp0" << std::endl;
   const robot_state::JointModelGroup* joint_model_group =
       move_group.getCurrentState()->getJointModelGroup(PLANNING_GROUP);
 
-      std::cout << "CP1" << std::endl;
-
   // Visualization
   // ^^^^^^^^^^^^^
   //
@@ -104,12 +101,10 @@ std::cout << "Cp0" << std::endl;
   namespace rvt = rviz_visual_tools;
   moveit_visual_tools::MoveItVisualTools visual_tools("base_link");
   visual_tools.deleteAllMarkers();
-  std::cout << "CP2" << std::endl;
 
   // Remote control is an introspection tool that allows users to step through a high level script
   // via buttons and keyboard shortcuts in RViz
   visual_tools.loadRemoteControl();
-  std::cout << "CP3" << std::endl;
 
   // RViz provides many types of markers, in this demo we will use text, cylinders, and spheres
   Eigen::Isometry3d text_pose = Eigen::Isometry3d::Identity();
@@ -171,29 +166,41 @@ std::cout << "Cp0" << std::endl;
 
   move_group.move();
 
-  //Moving to 4 objective positions
-  geometry_msgs::Pose targets[4];
-  for (int i = 0; i < 2; i++){
+  //Creating 4 positions in a square
+  int p;
+  std::vector<geometry_msgs::Pose> targets(5);
+  for (int i = 0; i < 2; i++){  //Column
     for (int j = 0; j < 2; j++){
-      targets[i].position.x = initial.position.x + (i == 0 ? -0.1 : 0.1);
-      targets[i].position.y = initial.position.y + (j - i == 0 ? -0.1 : 0.1);
-      targets[i].position.z = initial.position.z;
+      p = (i == 0 ? j : 3 - j);
+      targets[p].position.x = initial.position.x + (i == 0 ? -0.1 : 0.1);
+      targets[p].position.y = initial.position.y + (j == 1 ? -0.1 : 0.1);
+      targets[p].position.z = initial.position.z;
 
-      targets[i].orientation = initial.orientation;
-
-      move_group.setPoseTarget(targets[i]);
-
-      // Now, we call the planner to compute the plan and visualize it.
-      // Note that we are just planning, not asking move_group
-      // to actually move the robot.
-      moveit::planning_interface::MoveGroupInterface::Plan my_plan;
-
-      bool success = (move_group.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-
-      move_group.move();
+      targets[p].orientation = initial.orientation;
     }
   }
+  //Assign the final position to the initial
+  targets[4] = targets[0];
 
+  //Moving to 4 objective positions
+  for (int p = 0; p < 4; p++){
+      move_group.setPoseTarget(targets[p]);
+
+      move_group.move();
+  }
+
+  move_group.setPlanningTime(10.0);
+
+  //Making a square movement
+  moveit_msgs::RobotTrajectory trajectory;
+  const double jump_threshold = 0.0;
+  const double eef_step = 0.01;
+  double fraction = move_group.computeCartesianPath(targets, eef_step, jump_threshold, trajectory);
+
+  moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+
+  my_plan.trajectory_ = trajectory;
+  move_group.execute(my_plan);
 
   ros::shutdown();
   return 0;
