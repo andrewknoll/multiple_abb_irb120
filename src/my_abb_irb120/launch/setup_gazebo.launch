@@ -1,0 +1,22 @@
+<launch>
+	<arg name="robots" default="1" doc="Number of robots to spawn" />
+
+  <!-- remap topics to conform to ROS-I specifications -->
+  <remap from="/arm_controller/follow_joint_trajectory" to="/joint_trajectory_action" />
+  <remap from="/arm_controller/state" to="/feedback_states" />
+  <remap from="/arm_controller/command" to="/joint_path_command"/>
+
+  <!-- startup simulated world -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="worlds/empty.world"/>
+    <arg name="gui" value="true"/>
+  </include>
+
+  <include file="$(find my_abb_irb120)/launch/recursive_spawn.launch">
+    <arg name="number" value="$(arg robots)"/>
+  </include>
+
+  <!-- init and start Gazebo ros_control interface -->
+  <include file="$(find abb_irb120_gazebo)/launch/irb120_3_58_control.launch"/>
+
+</launch>
