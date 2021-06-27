@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
 <xacro:include filename="$(find my_abb_irb120)/urdf/irb120_3_58_support_macro.xacro"/>
-<xacro:macro name="abb_irb120_3_58_g" params="prefix robotname">
+<xacro:macro name="abb_irb120_3_58_g" params="prefix robotns">
 
   <!-- get base ABB IRB120 model -->
-  <xacro:abb_irb120_3_58 prefix="${prefix}" robotname="${robotname}"/>
+  <xacro:abb_irb120_3_58 prefix="${prefix}" robotns="${robotns}"/>
 
   <!-- transmission list -->
   <transmission name="${prefix}tran1">
@@ -96,7 +96,7 @@
   <!-- ros_control plugin -->
   <gazebo>
     <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
-      <robotNamespace>${robotname}</robotNamespace>
+      <robotnsspace>${robotns}</robotnsspace>
       <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
     </plugin>
   </gazebo>  

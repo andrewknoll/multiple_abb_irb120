@@ -1,22 +1,32 @@
 <launch>
+  <arg name="base_name" default="robot" />
+  <arg name="must_start_world" default="true"/>
 	<arg name="robots" default="1" doc="Number of robots to spawn" />
 
-  <!-- remap topics to conform to ROS-I specifications -->
-  <remap from="/arm_controller/follow_joint_trajectory" to="/joint_trajectory_action" />
-  <remap from="/arm_controller/state" to="/feedback_states" />
-  <remap from="/arm_controller/command" to="/joint_path_command"/>
 
-  <!-- startup simulated world -->
-  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+  <!-- remap topics to conform to ROS-I specifications -->
+  <remap from="/$(arg base_name)$(arg robots)/arm_controller/follow_joint_trajectory" to="/$(arg base_name)$(arg robots)/joint_trajectory_action" />
+  <remap from="/$(arg base_name)$(arg robots)/arm_controller/state" to="/$(arg base_name)$(arg robots)/feedback_states" />
+  <remap from="/$(arg base_name)$(arg robots)/arm_controller/command" to="/$(arg base_name)$(arg robots)/joint_path_command"/>
+
+  <include file="$(find my_abb_irb120)/launch/spawn_irb_120.launch" if="$(eval arg('robots') >= 1)">
+		<arg name="robot_name" value="$(arg base_name)$(arg robots)"/>
+		<arg name="position_x" value="$(eval arg('robots') - 1)"/>
+	</include>
+
+	<include file="$(find my_abb_irb120)/launch/setup_gazebo.launch" if="$(eval arg('robots') >= 1)">
+		<arg name="robots" value="$(eval arg('robots') - 1)"/>
+    <arg name="base_name" value="$(arg base_name)"/>
+    <arg name="must_start_world" value="false"/>
+	</include>
+
+    <!-- startup simulated world -->
+  <include if="$(arg must_start_world)" file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="world_name" value="worlds/empty.world"/>
     <arg name="gui" value="true"/>
   </include>
 
-  <include file="$(find my_abb_irb120)/launch/recursive_spawn.launch">
-    <arg name="number" value="$(arg robots)"/>
-  </include>
-
   <!-- init and start Gazebo ros_control interface -->
-  <include file="$(find abb_irb120_gazebo)/launch/irb120_3_58_control.launch"/>
+  <!--include file="$(find abb_irb120_gazebo)/launch/irb120_3_58_control.launch"/-->
 
 </launch>

@@ -2,7 +2,7 @@
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
   <xacro:include filename="$(find abb_resources)/urdf/common_materials.xacro"/>
 
-  <xacro:macro name="abb_irb120_3_58" params="prefix robotname">
+  <xacro:macro name="abb_irb120_3_58" params="prefix robotns">
     <!-- link list -->
     <link name="${prefix}base_link">
       <inertial>

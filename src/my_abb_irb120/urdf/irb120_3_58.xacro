@@ -2,7 +2,7 @@
 
 <robot name="abb_irb120_3_58" xmlns:xacro="http://ros.org/wiki/xacro">
   <xacro:include filename="$(find my_abb_irb120)/urdf/irb120_3_58_macro.xacro"/>	
-  <xacro:abb_irb120_3_58_g prefix="" robotname=""/>
+  <xacro:abb_irb120_3_58_g prefix="" robotns=""/>
 
   <!-- Fix robot to Gazebo world -->
   <link name="world"/>
