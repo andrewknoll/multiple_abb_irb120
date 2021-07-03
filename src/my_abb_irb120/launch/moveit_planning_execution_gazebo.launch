@@ -24,18 +24,21 @@
   <!-- Allow user to specify database location -->
   <arg name="db_path" default="$(find abb_irb120_moveit_config)/default_warehouse_mongo_db" />
 
-  <remap from="/joint_trajectory_action" to="/robot1/joint_trajectory_action"/>
+  <arg name="robot_name" default="robot1"/>
 
-  <group ns="robot1">
+  <remap from="/joint_trajectory_action" to="/$(arg robot_name)/joint_trajectory_action"/>
+
+  <group ns="$(arg robot_name)">
     <rosparam command="load" file="$(find abb_irb120_support)/config/joint_names_irb120_3_58.yaml" />
 
     <include file="$(find my_abb_irb120)/launch/planning_context.launch">
         <arg name="load_robot_description" value="true" />
-        <arg name="robot_name" value="robot1"/>
+        <arg name="robot_name" value="$(arg robot_name)"/>
       </include>
 
       <include file="$(find abb_irb120_moveit_config)/launch/move_group.launch">
         <arg name="publish_monitored_planning_scene" value="true" />
+        <!--<arg name="robot_name" value="$(arg robot_name)"/>-->
       </include>
 
       <include file="$(find abb_irb120_moveit_config)/launch/moveit_rviz.launch">
