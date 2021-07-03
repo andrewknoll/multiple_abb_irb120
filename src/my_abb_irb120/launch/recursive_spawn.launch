@@ -2,8 +2,6 @@
 
 	<arg name="number" default="0"/>
 
-
-
 	<include file="$(find my_abb_irb120)/launch/spawn_irb_120.launch" if="$(eval arg('number') >= 1)">
 		<arg name="robot_name" value="robot$(arg number)"/>
 		<arg name="position_x" value="$(eval arg('number') - 1)"/>

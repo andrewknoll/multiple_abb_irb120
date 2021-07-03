@@ -5,17 +5,18 @@
   <arg name="position_y" default="0"/>
   <arg name="position_z" default="0"/>
 
-<!-- /robot_description makes it so the param is the already created one???? -->
-<group ns="$(arg robot_name)">
-<param name="/tf_prefix" value="$(arg robot_name)"/>
-</group>
-<!-- urdf xml robot description loaded on the Parameter Server, converting the xacro into a proper urdf file-->
-<param name="robot_description" command="$(find xacro)/xacro --inorder '$(find my_abb_irb120)/urdf/irb120_3_58.xacro' prefix:='$(arg robot_name)_' robotns:='/$(arg robot_name)'" />
+  <!-- setup tf_prefix-->
+  <group ns="$(arg robot_name)">
+    <param name="/tf_prefix" value="$(arg robot_name)"/>
+  </group>
+
+  <!-- urdf xml robot description loaded on the Parameter Server, converting the xacro into a proper urdf file-->
+  <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find my_abb_irb120)/urdf/irb120_3_58.xacro' prefix:='$(arg robot_name)_' robotns:='/$(arg robot_name)'" />
   
-<!-- push robot_description to factory and spawn robot in gazebo -->
+  <!-- push robot_description to factory and spawn robot in gazebo -->
   <node name="abb_irb120_$(arg robot_name)_spawn" pkg="gazebo_ros" type="spawn_model" output="screen" args="-urdf -param /robot_description -robot_namespace $(arg robot_name) -model abb_irb120_3_58_$(arg robot_name) -x $(arg position_x) -y $(arg position_y) -z $(arg position_z)" ns="$(arg robot_name)"/>
  
- <!-- convert joint states to TF transforms for rviz, etc -->
+  <!-- convert joint states to TF transforms for rviz, etc -->
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" output="screen" ns="$(arg robot_name)"/>
 
   <!-- init and start Gazebo ros_control interface -->

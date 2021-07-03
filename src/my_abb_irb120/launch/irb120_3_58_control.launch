@@ -2,18 +2,18 @@
 
   <arg name="robot_name" default="robot1"/>
 
-<group ns="$(arg robot_name)">
+  <group ns="$(arg robot_name)">
 
-  <!-- load the joint state controller -->
-  <rosparam file="$(find abb_irb120_gazebo)/config/joint_state_controller.yaml" command="load" />
-  <node name="joint_state_controller_spawner" pkg="controller_manager" type="spawner" 
-  args="joint_state_controller"/>
+    <!-- load the joint state controller -->
+    <rosparam file="$(find abb_irb120_gazebo)/config/joint_state_controller.yaml" command="load" />
+    <node name="joint_state_controller_spawner" pkg="controller_manager" type="spawner" 
+    args="joint_state_controller"/>
 
-  <!-- load the arm controller WITH SUBSTITUTION VALUES -->
-  <rosparam command="load" file="$(find my_abb_irb120)/config/irb120_3_58_arm_controller.yaml">
-  </rosparam>
+    <!-- load the arm controller -->
+    <rosparam command="load" file="$(find my_abb_irb120)/config/irb120_3_58_arm_controller.yaml">
+    </rosparam>
 
-  <node name="abb_irb120_controller_spawner" pkg="controller_manager" type="spawner" args="arm_controller"/>
+    <node name="abb_irb120_controller_spawner" pkg="controller_manager" type="spawner" args="arm_controller"/>
 
-</group>
+  </group>
 </launch>

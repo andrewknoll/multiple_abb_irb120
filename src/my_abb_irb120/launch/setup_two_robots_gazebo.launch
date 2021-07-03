@@ -1,0 +1,26 @@
+<launch>
+  <arg name="must_start_world" default="true"/>
+
+  <!-- remap topics to conform to ROS-I specifications -->
+  <remap from="/robot1/arm_controller/follow_joint_trajectory" to="/robot1/joint_trajectory_action" />
+  <remap from="/robot1/arm_controller/state" to="/robot1/feedback_states" />
+  <remap from="/robot1/arm_controller/command" to="/robot1/joint_path_command"/>
+
+  <!-- remap topics to conform to ROS-I specifications -->
+  <remap from="/robot2/arm_controller/follow_joint_trajectory" to="/robot2/joint_trajectory_action" />
+  <remap from="/robot2/arm_controller/state" to="/robot2/feedback_states" />
+  <remap from="/robot2/arm_controller/command" to="/robot2/joint_path_command"/>
+
+  <include file="$(find my_abb_irb120)/launch/spawn_irb_120.launch">
+		<arg name="robot_name" value="robot1"/>
+		<arg name="position_x" value="0"/>
+	</include>
+
+  <include file="$(find my_abb_irb120)/launch/spawn_irb_120.launch">
+		<arg name="robot_name" value="robot2"/>
+		<arg name="position_x" value="1"/>
+	</include>
+
+  <include file="$(find my_abb_irb120)/launch/setup_gazebo.launch"/>
+
+</launch>
