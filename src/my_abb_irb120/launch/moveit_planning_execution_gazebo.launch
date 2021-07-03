@@ -36,12 +36,12 @@
         <arg name="robot_name" value="$(arg robot_name)"/>
       </include>
 
-      <include file="$(find abb_irb120_moveit_config)/launch/move_group.launch">
+      <include file="$(find my_abb_irb120)/launch/move_group.launch">
         <arg name="publish_monitored_planning_scene" value="true" />
         <!--<arg name="robot_name" value="$(arg robot_name)"/>-->
       </include>
 
-      <include file="$(find abb_irb120_moveit_config)/launch/moveit_rviz.launch">
+      <include file="$(find my_abb_irb120)/launch/moveit_rviz.launch">
         <arg name="config" value="true"/>
       </include>
   </group>
