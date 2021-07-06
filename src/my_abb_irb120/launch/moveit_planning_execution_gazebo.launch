@@ -43,6 +43,7 @@
 
       <include file="$(find my_abb_irb120)/launch/moveit_rviz.launch">
         <arg name="config" value="true"/>
+        <arg name="robot_name" value="$(arg robot_name)"/>
       </include>
   </group>
 
