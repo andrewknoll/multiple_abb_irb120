@@ -5,6 +5,6 @@
   <xacro:arg name="prefix" default="robot1_" />
   <xacro:arg name="robotns" default="robot1" />
 
-  <xacro:include filename="$(find my_abb_irb120)/config/abb_irb120_3_58_macro.srdf.xacro"/>	
+  <xacro:include filename="$(find multiple_abb_irb120)/config/abb_irb120_3_58_macro.srdf.xacro"/>	
   <xacro:abb_irb120_3_58_g prefix="$(arg prefix)" robotns="$(arg robotns)"/>
 </robot>

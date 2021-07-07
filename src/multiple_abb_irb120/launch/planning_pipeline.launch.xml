@@ -7,7 +7,7 @@
 
   <arg name="robot_name" default="robot1"/>
 
-  <include file="$(find my_abb_irb120)/launch/$(arg pipeline)_planning_pipeline.launch.xml">
+  <include file="$(find multiple_abb_irb120)/launch/$(arg pipeline)_planning_pipeline.launch.xml">
     <arg name="robot_name" value="$(arg robot_name)"/>
   </include>
 

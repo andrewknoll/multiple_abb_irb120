@@ -17,7 +17,7 @@ do
     echo "  <remap from=\"/robot$i/arm_controller/command\" to=\"/robot$i/joint_path_command\"/>" >> $temp_file
 done
 
-echo "  <include file=\"\$(find my_abb_irb120)/launch/setup_gazebo.launch\">" >> $temp_file
+echo "  <include file=\"\$(find multiple_abb_irb120)/launch/setup_gazebo.launch\">" >> $temp_file
 echo "    <arg name=\"robots\" value=\"$robots\"/>" >> $temp_file
 echo "  </include>" >> $temp_file
 

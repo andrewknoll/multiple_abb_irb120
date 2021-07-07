@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
-<xacro:include filename="$(find my_abb_irb120)/urdf/irb120_3_58_support_macro.xacro"/>
+<xacro:include filename="$(find multiple_abb_irb120)/urdf/irb120_3_58_support_macro.xacro"/>
 <xacro:macro name="abb_irb120_3_58_g" params="prefix robotns">
 
   <!-- get base ABB IRB120 model -->

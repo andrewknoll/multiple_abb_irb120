@@ -20,7 +20,7 @@
   <arg name="publish_monitored_planning_scene" default="true"/>
 
   <!-- Planning Functionality -->
-  <include ns="move_group" file="$(find my_abb_irb120)/launch/planning_pipeline.launch.xml">
+  <include ns="move_group" file="$(find multiple_abb_irb120)/launch/planning_pipeline.launch.xml">
     <arg name="pipeline" value="ompl" />
     <arg name="robot_name" value="$(arg robot_name)"/>
   </include>

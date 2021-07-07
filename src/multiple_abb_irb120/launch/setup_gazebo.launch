@@ -9,7 +9,7 @@
   <remap from="/$(arg base_name)$(arg robots)/arm_controller/command" to="/$(arg base_name)$(arg robots)/joint_path_command"/>
   -->
 
-  <include file="$(find my_abb_irb120)/launch/recursive_spawn.launch" if="$(eval arg('robots') >= 1)">
+  <include file="$(find multiple_abb_irb120)/launch/recursive_spawn.launch" if="$(eval arg('robots') >= 1)">
     <arg name ="number" value="$(arg robots)"/>
   </include>
 

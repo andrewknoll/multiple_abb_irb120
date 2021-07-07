@@ -3,11 +3,11 @@
 !/.gitignore
 !/src/
 /src/*
-!/src/my_abb_irb120/
-!src/my_abb_irb120/src
-!src/my_abb_irb120/CMakeLists.txt
-!src/my_abb_irb120/package.xml
-!src/my_abb_irb120/launch
+!/src/multiple_abb_irb120/
+!src/multiple_abb_irb120/src
+!src/multiple_abb_irb120/CMakeLists.txt
+!src/multiple_abb_irb120/package.xml
+!src/multiple_abb_irb120/launch
 
 CMakeCache.txt
 cmake_install.cmake

@@ -1,0 +1,6 @@
+<launch>
+  <!-- added robot_name parameter-->
+  <arg name="param_name" default="robot_description"/>
+  <arg name="robot_name" default="abb_irb120"/>
+  <param name="$(arg param_name)" command="$(find xacro)/xacro --inorder '$(find multiple_abb_irb120)/urdf/irb120_3_58.xacro' prefix:='$(arg robot_name)_' robotname:='$(arg robot_name)'" />
+</launch>

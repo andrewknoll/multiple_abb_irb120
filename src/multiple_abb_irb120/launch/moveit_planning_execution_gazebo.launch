@@ -31,17 +31,17 @@
   <group ns="$(arg robot_name)">
     <rosparam command="load" file="$(find abb_irb120_support)/config/joint_names_irb120_3_58.yaml" />
 
-    <include file="$(find my_abb_irb120)/launch/planning_context.launch">
+    <include file="$(find multiple_abb_irb120)/launch/planning_context.launch">
         <arg name="load_robot_description" value="true" />
         <arg name="robot_name" value="$(arg robot_name)"/>
       </include>
 
-      <include file="$(find my_abb_irb120)/launch/move_group.launch">
+      <include file="$(find multiple_abb_irb120)/launch/move_group.launch">
         <arg name="publish_monitored_planning_scene" value="true" />
         <!--<arg name="robot_name" value="$(arg robot_name)"/>-->
       </include>
 
-      <include file="$(find my_abb_irb120)/launch/moveit_rviz.launch">
+      <include file="$(find multiple_abb_irb120)/launch/moveit_rviz.launch">
         <arg name="config" value="true"/>
         <arg name="robot_name" value="$(arg robot_name)"/>
       </include>
