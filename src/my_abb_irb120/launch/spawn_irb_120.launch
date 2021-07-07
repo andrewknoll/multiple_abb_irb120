@@ -7,8 +7,11 @@
 
   <!-- setup tf_prefix-->
   <group ns="$(arg robot_name)">
-    <param name="/tf_prefix" value="$(arg robot_name)"/>
+    <param name="tf_prefix" value="$(arg robot_name)"/>
   </group>
+
+  <!-- since the tf_prefix will change the name of the "world" frame, we need to broadcast the robot's world to "world" -->
+  <node pkg="tf" type="static_transform_publisher" name="$(arg robot_name)_world_broadcaster" args="0 0 0 0 0 0 world $(arg robot_name)/world 100"/>
 
   <!-- urdf xml robot description loaded on the Parameter Server, converting the xacro into a proper urdf file-->
   <param name="/$(arg robot_name)/robot_description" command="$(find xacro)/xacro --inorder '$(find my_abb_irb120)/urdf/irb120_3_58.xacro' robotns:='/$(arg robot_name)'" />
