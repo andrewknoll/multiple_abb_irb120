@@ -13,13 +13,14 @@ RobotInterface::RobotInterface(std::string planning_group, std::string ns) :
     ROBOT_NAMESPACE(ns),
     PLANNING_GROUP(planning_group) 
 {
-    std::string temp = (ns == "/" ? ns : ns + "/") + planning_group;
-    node_handle = new ros::NodeHandle(ns);
-    moveit::planning_interface::MoveGroupInterface::Options opt(temp, ns + "/robot_description", *node_handle);
+    std::cout << "Creating " << ns << std::endl;
+    std::string temp = (ns == "/" ? ns : ns + "_") + planning_group;
+    node_handle = new ros::NodeHandle("/" + ns);
+    moveit::planning_interface::MoveGroupInterface::Options opt(temp, "/" + ns + "/robot_description", *node_handle);
     move_group = std::make_shared <moveit::planning_interface::MoveGroupInterface> (opt);
-    joint_model_group = move_group->getCurrentState()->getJointModelGroup(temp);
+    //joint_model_group = move_group->getCurrentState()->getJointModelGroup(temp);
 
-    ROS_INFO_NAMED("robot_interface", "Started robot in namespace: %s", ns);
+    ROS_INFO_NAMED("robot_interface", "Started robot in namespace: %s", ns.c_str());
 }
 
 void RobotInterface::executeTrajectory(moveit_msgs::RobotTrajectory t) {

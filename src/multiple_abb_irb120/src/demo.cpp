@@ -82,20 +82,20 @@ int main(int argc, char** argv)
   ros::AsyncSpinner spinner(1);
   spinner.start();
 
-  std::vector<RobotInterface> robots = {RobotInterface("manipulator", "robot1"), RobotInterface("manipulator", "robot2")};
+  std::vector<RobotInterface> robots = {RobotInterface("manipulator", "robot2"), RobotInterface("manipulator", "robot1")};
 
   moveit_msgs::RobotTrajectory trajectory;
   const double jump_threshold = 0.0;
   const double eef_step = 0.01;
 
-  moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
+  moveit::planning_interface::PlanningSceneInterface planning_scene_interface("/robot1");
 
   // Start the demo
   // ^^^^^^^^^^^^^^^^^^^^^^^^^
   std::shared_ptr <moveit::planning_interface::MoveGroupInterface> move_group;
 
   geometry_msgs::Pose initial;
-
+  std::cout << "Moving Robots to 4 points in a square..." << std::endl;
   for (auto robot : robots){
 
     move_group = robot.getMoveGroup();
