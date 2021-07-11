@@ -1,11 +1,3 @@
-/*
-    std::unique_ptr<ros::NodeHandle> nodeHandler;
-    const std::string ROBOT_NAMESPACE;
-    const std::string PLANNING_GROUP;
-
-    std::unique_ptr<moveit::planning_interface::MoveGroupInterface> move_group;
-    const robot_state::JointModelGroup* joint_model_group;
-*/
 #include "RobotInterface.hpp"
 #include <ros/console.h>
 

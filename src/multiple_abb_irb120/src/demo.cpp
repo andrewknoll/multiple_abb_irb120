@@ -35,7 +35,6 @@
 /* Author: Sachin Chitta, Dave Coleman, Mike Lautman */
 // MODIFIED BY: Andrés Otero García, Gonzalo López Nicolás and María del Rosario Aragüés Muñoz
 
-
 #include <moveit/robot_model_loader/robot_model_loader.h>
 #include <moveit/planning_interface/planning_interface.h>
 #include <moveit/planning_scene/planning_scene.h>
@@ -55,23 +54,23 @@
 
 #include "RobotInterface.hpp"
 
+void printJointValues(moveit::planning_interface::MoveGroupInterface &move_group) {
+  std::vector<std::string> joint_names = move_group.getJoints();
+  std::vector<double> joint_values = move_group.getCurrentJointValues();
 
-void printJointValues(moveit::planning_interface::MoveGroupInterface& move_group){
-  std::vector <std::string> joint_names = move_group.getJoints();
-  std::vector <double> joint_values = move_group.getCurrentJointValues();
-
-  for(int i = 0; i < joint_names.size(); i++){
+  for (int i = 0; i < joint_names.size(); i++) {
     std::cout << joint_names[i] << ": " << joint_values[i] << std::endl;
   }
 }
 
-void printCurrentPose(moveit::planning_interface::MoveGroupInterface& move_group){
+void printCurrentPose(moveit::planning_interface::MoveGroupInterface &move_group) {
   geometry_msgs::PoseStamped pose = move_group.getCurrentPose();
 
-  std::cout << pose.pose.position << std::endl << pose.pose.orientation << std::endl;
+  std::cout << pose.pose.position << std::endl
+            << pose.pose.orientation << std::endl;
 }
 
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
 
   //
@@ -82,7 +81,7 @@ int main(int argc, char** argv)
   ros::AsyncSpinner spinner(1);
   spinner.start();
 
-  std::vector<RobotInterface> robots = {RobotInterface("manipulator", "robot2"), RobotInterface("manipulator", "robot1")};
+  std::vector<RobotInterface> robots = {RobotInterface("manipulator", "robot1"), RobotInterface("manipulator", "robot2")};
 
   moveit_msgs::RobotTrajectory trajectory;
   const double jump_threshold = 0.0;
@@ -92,67 +91,56 @@ int main(int argc, char** argv)
 
   // Start the demo
   // ^^^^^^^^^^^^^^^^^^^^^^^^^
-  std::shared_ptr <moveit::planning_interface::MoveGroupInterface> move_group;
-
+  std::shared_ptr<moveit::planning_interface::MoveGroupInterface> move_group;
   geometry_msgs::Pose initial;
-  std::cout << "Moving Robots to 4 points in a square..." << std::endl;
-  for (auto robot : robots){
+  std::vector<geometry_msgs::Pose> targets(5);
+  int p;
 
+  std::cout << "Moving Robots to 4 points in a square..." << std::endl;
+
+  for (auto robot : robots) {
     move_group = robot.getMoveGroup();
 
-    // Getting Basic Information
-    // ^^^^^^^^^^^^^^^^^^^^^^^^^
-    //
-    // We can print the name of the reference frame for this robot.
-    ROS_INFO_NAMED("demo", "Planning frame: %s", move_group->getPlanningFrame().c_str());
-
-    // We can also print the name of the end-effector link for this group.
-    ROS_INFO_NAMED("demo", "End effector link: %s", move_group->getEndEffectorLink().c_str());
-
-    // We can get a list of all the groups in the robot:
-    ROS_INFO_NAMED("demo", "Available Planning Groups:");
-    std::copy(move_group->getJointModelGroupNames().begin(), move_group->getJointModelGroupNames().end(),
-              std::ostream_iterator<std::string>(std::cout, ", "));
-
     //Get to the initial pose
+    // ^^^^^^^^^^^^^^^^^^^^^^^^^
     move_group->setNamedTarget("demo_pose");
     move_group->move();
     initial = move_group->getCurrentPose().pose;
 
-  //Creating 4 positions in a square
-  int p;
-  std::vector<geometry_msgs::Pose> targets(5);
-  for (int i = 0; i < 2; i++){  //Column
-    for (int j = 0; j < 2; j++){
-      p = (i == 0 ? j : 3 - j);
-      targets[p].position.x = initial.position.x + (i == 0 ? -0.1 : 0.1);
-      targets[p].position.y = initial.position.y + (j == 1 ? -0.1 : 0.1);
-      targets[p].position.z = initial.position.z;
+    //Creating 4 positions in a square
+    // ^^^^^^^^^^^^^^^^^^^^^^^^^
+    for (int i = 0; i < 2; i++) { //Column
+      for (int j = 0; j < 2; j++) {
+        p = (i == 0 ? j : 3 - j);
+        targets[p].position.x = initial.position.x + (i == 0 ? -0.1 : 0.1);
+        targets[p].position.y = initial.position.y + (j == 1 ? -0.1 : 0.1);
+        targets[p].position.z = initial.position.z;
 
-      targets[p].orientation = initial.orientation;
+        targets[p].orientation = initial.orientation;
+      }
     }
-  }
-  //Assign the final position to the initial
-  targets[4] = targets[0];
-
+    //Assign the final position to the initial
+    // ^^^^^^^^^^^^^^^^^^^^^^^^^
+    targets[4] = targets[0];
 
     //Moving to 4 objective positions
-    for (int p = 0; p < 4; p++){
-        move_group->setPoseTarget(targets[p]);
+    // ^^^^^^^^^^^^^^^^^^^^^^^^^
+    for (int p = 0; p < 4; p++) {
+      move_group->setPoseTarget(targets[p]);
 
-        move_group->move();
+      move_group->move();
     }
 
     move_group->setPlanningTime(10.0);
 
     //Making a square movement
+    // ^^^^^^^^^^^^^^^^^^^^^^^^^
     double fraction = move_group->computeCartesianPath(targets, eef_step, jump_threshold, trajectory);
 
     moveit::planning_interface::MoveGroupInterface::Plan my_plan;
-    
+
     my_plan.trajectory_ = trajectory;
     move_group->execute(my_plan);
-
   }
 
   ros::shutdown();
