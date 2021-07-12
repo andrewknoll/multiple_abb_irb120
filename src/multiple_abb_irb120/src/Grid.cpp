@@ -10,14 +10,14 @@ float calculateInitialPos(int index, float offset, float size, int resolution) {
     return offset - (size / 2) + (float)index * (size / (float)resolution);
 }
 
-Grid::Grid(ros::NodeHandle* nh, float x_origin, float y_origin, float width, float height, int hres, int vres) :
-    nh(nh), x(x_origin), y(y_origin), w(width), h(height), hr(hres), vr(vres)
+Grid::Grid(ros::NodeHandle* nh, float x_origin, float y_origin, float z_origin, float width, float height, int hres, int vres) :
+    nh(nh), x(x_origin), y(y_origin), z(z_origin), w(width), h(height), hr(hres), vr(vres)
 {
     grid = std::vector <std::vector<GazeboSphere*> >(vres);
     for(int i = 0; i < vres; i++) {
         grid[i] = std::vector<GazeboSphere*>(hres);
         for(int j = 0; j < hres; j++) {
-            grid[i][j] = new GazeboSphere(nh, calculateInitialPos(i, x_origin, width, hres), calculateInitialPos(j, y_origin, height, vres), 1);
+            grid[i][j] = new GazeboSphere(nh, calculateInitialPos(i, x_origin, width, hres), calculateInitialPos(j, y_origin, height, vres), z_origin);
         }
     }
 }

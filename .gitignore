@@ -8,6 +8,7 @@
 !src/multiple_abb_irb120/CMakeLists.txt
 !src/multiple_abb_irb120/package.xml
 !src/multiple_abb_irb120/launch
+src/multiple_abb_irb120/launch/temp/
 
 CMakeCache.txt
 cmake_install.cmake

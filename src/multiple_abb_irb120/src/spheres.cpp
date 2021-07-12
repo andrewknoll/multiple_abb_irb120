@@ -102,7 +102,7 @@ int main(int argc, char** argv)
 
   // Start the Grid
   // ^^^^^^^^^^^^^^^^^^^^^^^^^
-  multiple_abb_irb120::Grid grid(&n, 5.0, 0.0, 10.0, 10.0, 5, 5);
+  multiple_abb_irb120::Grid grid(&n, 0.0, 0.0, 1.0, 5.0, 5.0, 10, 10);
 
   while(!shutdown_request){
     grid.update();
