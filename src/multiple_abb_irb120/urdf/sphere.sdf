@@ -1,0 +1,19 @@
+<!-- Obtained from http://gazebosim.org/tutorials?tut=plugins_world on 11/JUL/2021-->
+<sdf version ='1.4'>
+<model name ='sphere'>
+  <pose>1 0 0 0 0 0</pose>
+  <link name ='link'>
+    <pose>0 0 .5 0 0 0</pose>
+    <collision name ='collision'>
+      <geometry>
+        <sphere><radius>0.5</radius></sphere>
+      </geometry>
+    </collision>
+    <visual name ='visual'>
+      <geometry>
+        <sphere><radius>0.5</radius></sphere>
+      </geometry>
+    </visual>
+  </link>
+</model>
+</sdf>

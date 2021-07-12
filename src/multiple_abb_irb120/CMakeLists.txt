@@ -116,8 +116,14 @@ find_package(catkin REQUIRED COMPONENTS
   moveit_ros_planning_interface
   moveit_msgs
   moveit_visual_tools
+  gazebo_ros
 )
 # find_package(Boost REQUIRED COMPONENTS system)
+
+find_package(gazebo REQUIRED)
+
+link_directories(${GAZEBO_LIBRARY_DIRS})
+include_directories(${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS} ${GAZEBO_INCLUDE_DIRS})
 
 include_directories(
   include
@@ -128,8 +134,17 @@ include_directories(
 add_library(robot_interface SHARED src/RobotInterface.cpp include/RobotInterface.hpp)
 target_link_libraries(robot_interface PUBLIC ${catkin_LIBRARIES})
 
+add_library(grid SHARED src/Grid.cpp include/Grid.hpp)
+target_link_libraries(grid PUBLIC ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+
+add_library(gazebo_sphere SHARED src/GazeboSphere.cpp include/GazeboSphere.hpp)
+target_link_libraries(gazebo_sphere PUBLIC ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+
 add_executable(demo src/demo.cpp include/RobotInterface.hpp)
 target_link_libraries(demo PUBLIC ${catkin_LIBRARIES} PUBLIC robot_interface)
+
+add_executable(spheres src/spheres.cpp include/RobotInterface.hpp)
+target_link_libraries(spheres PUBLIC ${GAZEBO_LIBRARIES} PUBLIC ${catkin_LIBRARIES} PUBLIC robot_interface)
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
