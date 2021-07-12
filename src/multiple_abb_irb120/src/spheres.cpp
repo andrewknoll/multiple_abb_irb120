@@ -64,25 +64,32 @@
 #include <ros/ros.h>
 
 #include "RobotInterface.hpp"
+#include "Grid.hpp"
 
+#include <signal.h>
 
+bool volatile shutdown_request = false;
 
-std::string fromFileToString(std::string filename) {
-  std::ifstream f(filename);
-  std::stringstream buffer;
-  buffer << f.rdbuf();
+void signalHandler( int signum ) {
+  std::cout << "Interrupt received: " << signum << std::endl;
 
-  return buffer.str();
+  // cleanup and close up stuff here  
+  // terminate program  
+
+  shutdown_request = 1;
 }
+
 
 int main(int argc, char** argv)
 {
-
+  signal(SIGINT, signalHandler);
+  signal(SIGKILL, signalHandler);
+  signal(SIGTERM, signalHandler);
   //
   // Setup
   // ^^^^^
   std::string name_ = "sphere_spawning";
-  ros::init(argc, argv, name_);
+  ros::init(argc, argv, name_, ros::init_options::NoSigintHandler);
   ros::NodeHandle n;
   ros::AsyncSpinner spinner(1);
   spinner.start();
@@ -93,10 +100,13 @@ int main(int argc, char** argv)
 
   std::shared_ptr <moveit::planning_interface::MoveGroupInterface> move_group;
 
-  // Start the demo
+  // Start the Grid
   // ^^^^^^^^^^^^^^^^^^^^^^^^^
-  
-  
+  multiple_abb_irb120::Grid grid(&n, 5.0, 0.0, 10.0, 10.0, 5, 5);
+
+  while(!shutdown_request){
+    grid.update();
+  }
 
   ros::shutdown();
   return 0;

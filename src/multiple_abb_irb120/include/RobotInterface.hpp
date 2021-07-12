@@ -1,3 +1,5 @@
+#pragma once
+
 #include <pluginlib/class_loader.h>
 #include <ros/ros.h>
 #include <trajectory_msgs/JointTrajectory.h>

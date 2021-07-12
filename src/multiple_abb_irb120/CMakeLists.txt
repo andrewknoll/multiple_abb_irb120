@@ -134,17 +134,17 @@ include_directories(
 add_library(robot_interface SHARED src/RobotInterface.cpp include/RobotInterface.hpp)
 target_link_libraries(robot_interface PUBLIC ${catkin_LIBRARIES})
 
-add_library(grid SHARED src/Grid.cpp include/Grid.hpp)
-target_link_libraries(grid PUBLIC ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
-
 add_library(gazebo_sphere SHARED src/GazeboSphere.cpp include/GazeboSphere.hpp)
 target_link_libraries(gazebo_sphere PUBLIC ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+
+add_library(grid SHARED src/Grid.cpp include/Grid.hpp include/GazeboSphere.hpp)
+target_link_libraries(grid PUBLIC gazebo_sphere ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
 add_executable(demo src/demo.cpp include/RobotInterface.hpp)
 target_link_libraries(demo PUBLIC ${catkin_LIBRARIES} PUBLIC robot_interface)
 
-add_executable(spheres src/spheres.cpp include/RobotInterface.hpp)
-target_link_libraries(spheres PUBLIC ${GAZEBO_LIBRARIES} PUBLIC ${catkin_LIBRARIES} PUBLIC robot_interface)
+add_executable(spheres src/spheres.cpp include/RobotInterface.hpp include/Grid.hpp)
+target_link_libraries(spheres PUBLIC ${GAZEBO_LIBRARIES} PUBLIC ${catkin_LIBRARIES} PUBLIC robot_interface PUBLIC grid)
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
