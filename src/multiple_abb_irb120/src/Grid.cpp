@@ -17,8 +17,7 @@ Grid::Grid(ros::NodeHandle* nh, float x_origin, float y_origin, float width, flo
     for(int i = 0; i < vres; i++) {
         grid[i] = std::vector<GazeboSphere*>(hres);
         for(int j = 0; j < hres; j++) {
-            grid[i][j] = new GazeboSphere(nh);
-            grid[i][j]->setPosition(calculateInitialPos(i, x_origin, width, hres), calculateInitialPos(j, y_origin, height, vres), 1);
+            grid[i][j] = new GazeboSphere(nh, calculateInitialPos(i, x_origin, width, hres), calculateInitialPos(j, y_origin, height, vres), 1);
         }
     }
 }

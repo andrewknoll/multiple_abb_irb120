@@ -14,12 +14,12 @@ class GazeboSphere {
 private:
     static std::atomic<unsigned int> currentID;
     ros::NodeHandle* nh;
-    int x, y, z;
+    float x, y, z;
     ros::ServiceClient position_client;
 public:
     const unsigned int ID;
 
-    GazeboSphere(ros::NodeHandle* nh);
-    void setPosition(int x, int y, int z);
+    GazeboSphere(ros::NodeHandle* nh, float x, float y, float z);
+    void setPosition(float x, float y, float z);
     void update();
 };

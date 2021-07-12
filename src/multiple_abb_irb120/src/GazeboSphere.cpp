@@ -21,20 +21,23 @@ std::string fromFileToString(std::string filename) {
 
 std::atomic<unsigned int> GazeboSphere::currentID(0);
 
-GazeboSphere::GazeboSphere(ros::NodeHandle* nh) : nh(nh), ID(++currentID) {
+GazeboSphere::GazeboSphere(ros::NodeHandle* nh, float x, float y, float z) : nh(nh), ID(++currentID) {
     ros::ServiceClient gazebo_spawn_client = nh->serviceClient<gazebo_msgs::SpawnModel>(GAZEBO_SPAWN_SDF_SERVICE);
     position_client = nh->serviceClient<gazebo_msgs::SetModelState>(GAZEBO_SET_MODEL_STATE);
 
     gazebo_msgs::SpawnModel model;
     model.request.model_xml = fromFileToString(ros::package::getPath("multiple_abb_irb120") + SPHERE_SDF);
     model.request.model_name = "sphere" + std::to_string(ID);
-    std::cout << currentID << std::endl;
     model.request.reference_frame="world";
+    setPosition(x, y, z);
+    model.request.initial_pose.position.x = x;
+    model.request.initial_pose.position.y = y;
+    model.request.initial_pose.position.z = z;
     
     gazebo_spawn_client.call(model);
 }
 
-void GazeboSphere::setPosition(int x, int y, int z) {
+void GazeboSphere::setPosition(float x, float y, float z) {
     this->x = x;
     this->y = y;
     this->z = z;
