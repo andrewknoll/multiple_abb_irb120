@@ -2,6 +2,7 @@
 <sdf version ='1.4'>
 <model name ='sphere'>
   <pose>0 0 .5 0 0 0</pose>
+  <!-- Made static so Gazebo doesn't calculate the gravity interaction-->
   <static>true</static>
   <link name ='link'>
     <collision name ='collision'>

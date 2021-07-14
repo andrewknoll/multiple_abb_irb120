@@ -79,7 +79,7 @@ void signalHandler( int signum ) {
   // cleanup and close up stuff here  
   // terminate program  
 
-  shutdown_request = 1;
+  shutdown_request = true;
 }
 
 
@@ -108,7 +108,7 @@ int main(int argc, char** argv)
   // Start the Grid
   // ^^^^^^^^^^^^^^^^^^^^^^^^^
   multiple_abb_irb120::Grid grid(&n, 0.0, 0.0, 1.0, 5.0, 5.0, 10, 10);
-  MassSpringDamping msd(1.0, 1.0, 1.0);
+  MassSpringDamping msd(0.01, 10.0, 1.0);
   t0 = std::chrono::steady_clock::now();
 
   while(!shutdown_request){
