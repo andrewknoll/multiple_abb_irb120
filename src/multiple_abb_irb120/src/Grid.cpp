@@ -22,8 +22,16 @@ Grid::Grid(ros::NodeHandle* nh, float x_origin, float y_origin, float z_origin, 
     }
 }
 
-const GazeboSphere& Grid::getSphere(int i, int j) {
+GazeboSphere& Grid::operator()(int i, int j) {
     return *grid[i][j];
+}
+
+int Grid::getRows(){
+    return vr;
+}
+
+int Grid::getColumns(){
+    return hr;
 }
 
 void Grid::update(){

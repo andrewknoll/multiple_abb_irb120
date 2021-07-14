@@ -15,7 +15,9 @@ namespace multiple_abb_irb120{
         std::vector<std::vector<GazeboSphere*> > grid;
     public:
         Grid(ros::NodeHandle* nh, float x_origin, float y_origin, float z_origin, float width, float height, int hres, int vres);
-        const GazeboSphere& getSphere(int i, int j);
+        GazeboSphere& operator()(int i, int j);
+        int getRows();
+        int getColumns();
         void update();
     };
 }

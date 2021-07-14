@@ -134,17 +134,23 @@ include_directories(
 add_library(robot_interface SHARED src/RobotInterface.cpp include/RobotInterface.hpp)
 target_link_libraries(robot_interface PUBLIC ${catkin_LIBRARIES})
 
+add_library(utils SHARED src/utils.cpp include/utils.hpp)
+target_link_libraries(utils PUBLIC ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+
 add_library(gazebo_sphere SHARED src/GazeboSphere.cpp include/GazeboSphere.hpp)
 target_link_libraries(gazebo_sphere PUBLIC ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
 add_library(grid SHARED src/Grid.cpp include/Grid.hpp include/GazeboSphere.hpp)
 target_link_libraries(grid PUBLIC gazebo_sphere ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
+add_library(msd SHARED src/MassSpringDamping.cpp include/MassSpringDamping.hpp include/Grid.hpp include/utils.hpp)
+target_link_libraries(msd PUBLIC utils gazebo_sphere grid ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+
 add_executable(demo src/demo.cpp include/RobotInterface.hpp)
 target_link_libraries(demo PUBLIC ${catkin_LIBRARIES} PUBLIC robot_interface)
 
 add_executable(spheres src/spheres.cpp include/RobotInterface.hpp include/Grid.hpp)
-target_link_libraries(spheres PUBLIC ${GAZEBO_LIBRARIES} PUBLIC ${catkin_LIBRARIES} PUBLIC robot_interface PUBLIC grid)
+target_link_libraries(spheres PUBLIC ${GAZEBO_LIBRARIES} PUBLIC ${catkin_LIBRARIES} PUBLIC robot_interface PUBLIC grid PUBLIC msd)
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations

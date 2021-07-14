@@ -65,8 +65,11 @@
 
 #include "RobotInterface.hpp"
 #include "Grid.hpp"
+#include <chrono>
+#include "MassSpringDamping.hpp"
 
 #include <signal.h>
+#include <chrono>
 
 bool volatile shutdown_request = false;
 
@@ -94,6 +97,8 @@ int main(int argc, char** argv)
   ros::AsyncSpinner spinner(1);
   spinner.start();
 
+  std::chrono::steady_clock::time_point t0, t;
+
   std::vector<RobotInterface> robots = {RobotInterface("manipulator", "robot1"), RobotInterface("manipulator", "robot2")};
 
   moveit::planning_interface::PlanningSceneInterface planning_scene_interface("/robot1");
@@ -103,9 +108,14 @@ int main(int argc, char** argv)
   // Start the Grid
   // ^^^^^^^^^^^^^^^^^^^^^^^^^
   multiple_abb_irb120::Grid grid(&n, 0.0, 0.0, 1.0, 5.0, 5.0, 10, 10);
+  MassSpringDamping msd(1.0, 1.0, 1.0);
+  t0 = std::chrono::steady_clock::now();
 
   while(!shutdown_request){
+    t = std::chrono::steady_clock::now();
+    msd.computePositions(grid, std::chrono::duration_cast<std::chrono::microseconds>(t - t0).count() * 1e-06);
     grid.update();
+    t0 = t;
   }
 
   ros::shutdown();

@@ -3,8 +3,8 @@ robots="$1"
 dir="$(cd "$(dirname "$0")" && pwd)"
 
 source "$dir/../../../devel/setup.bash"
-
-temp_file=$(mktemp "tmp/gazebo_remapper_file_XXXXXX.launch")
+temp_dir=$(mktemp -d "multiple_robots_ros_packageXXXX")
+temp_file=$(mktemp "--tmpdir=$temp_dir" "gazebo_remapper_file_XXXXXX.launch")
 i=0
 
 echo "<launch>" > $temp_file
@@ -25,3 +25,4 @@ echo "</launch>" >> $temp_file
 
 roslaunch $temp_file
 rm $temp_file
+rm -r $temp_dir
