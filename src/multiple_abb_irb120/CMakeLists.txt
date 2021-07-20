@@ -134,6 +134,9 @@ include_directories(
 add_library(factory SHARED src/WorldPlugin.cpp)
 target_link_libraries(factory PUBLIC ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
+add_library(grid_vertex SHARED src/GridVertex.cpp include/GridVertex.hpp)
+target_link_libraries(grid_vertex PUBLIC ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+
 add_library(robot_interface SHARED src/RobotInterface.cpp include/RobotInterface.hpp)
 target_link_libraries(robot_interface PUBLIC ${catkin_LIBRARIES})
 
@@ -141,10 +144,10 @@ add_library(utils SHARED src/utils.cpp include/utils.hpp)
 target_link_libraries(utils PUBLIC ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
 add_library(grid SHARED src/Grid.cpp include/Grid.hpp)
-target_link_libraries(grid PUBLIC ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+target_link_libraries(grid PUBLIC grid_vertex ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
 add_library(msd SHARED src/MassSpringDamping.cpp include/MassSpringDamping.hpp include/Grid.hpp include/utils.hpp)
-target_link_libraries(msd PUBLIC utils grid ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+target_link_libraries(msd PUBLIC utils grid grid_vertex ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
 add_library(gazebo_plugin SHARED src/GazeboPlugin.cpp include/GazeboPlugin.hpp)
 target_link_libraries(gazebo_plugin PUBLIC utils msd grid ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})

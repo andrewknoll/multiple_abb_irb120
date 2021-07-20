@@ -54,5 +54,6 @@ void DeformableObject::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf)
 void DeformableObject::OnUpdate() {
   t = std::chrono::steady_clock::now();
   msd->computePositions(grid, std::chrono::duration_cast<std::chrono::microseconds>(t - t0).count() * 1e-06);
+  grid->update();
   t0 = t;
 }

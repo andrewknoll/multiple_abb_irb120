@@ -34,8 +34,8 @@ void MassSpringDamping::computePositions(std::shared_ptr<multiple_abb_irb120::Gr
                     continue;
                     c = neighbour_j + 1 + 3*(neighbour_i + 1);
                     if(c > 3) c--;
-                    l0 = grid->get(i, j)->InitialRelativePose().Pos() - grid->get(i + neighbour_i, j + neighbour_j)->InitialRelativePose().Pos();
-                    lt = grid->get(i, j)->RelativePose().Pos() - grid->get(i + neighbour_i, j + neighbour_j)->RelativePose().Pos();
+                    l0 = grid->getLink(i, j)->InitialRelativePose().Pos() - grid->getLink(i + neighbour_i, j + neighbour_j)->InitialRelativePose().Pos();
+                    lt = grid->getLink(i, j)->RelativePose().Pos() - grid->getLink(i + neighbour_i, j + neighbour_j)->RelativePose().Pos();
                     n0 = normalize(l0);
                     n = normalize(lt);
                     x.row(c) = toEigenVector3d((n0 - n) * (lt / n));
@@ -43,11 +43,11 @@ void MassSpringDamping::computePositions(std::shared_ptr<multiple_abb_irb120::Gr
             }
             forces = k*x;
             //Forces manually applied + damping + gravity
-            result = toIgnitionVector3d(forces) + damping * grid->get(i, j)->RelativeLinearVel();
+            result = toIgnitionVector3d(forces) + damping * grid->getLink(i, j)->RelativeLinearVel();
             if(gravity){
                 result += toIgnitionVector3d(mass * f_g);
             }
-            grid->get(i, j)->SetForce(result);
+            grid->get(i, j).setForceCache(result);
         }
     }
     /*
