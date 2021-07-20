@@ -14,47 +14,63 @@ Eigen::Vector3d toEigenVector3d(const ignition::math::Vector3d& v){
     return Eigen::Vector3d(v.X(), v.Y(), v.Z());
 }
 
-gazebo::msgs::Link makeLinkWithSphereShape(gazebo::physics::ModelPtr model, std::string name, double mass, double radius, gazebo::msgs::Pose* pose){
-    /*sdf::ElementPtr link = model->GetSDF()->AddElement("link");
-    link->SetName(name);
+std::map<std::string, double> readParameters(std::string filename) {
+  std::map<std::string, double> parameters;
 
-    gazebo::msgs::SphereGeom* sphere = new gazebo::msgs::SphereGeom();
-    sphere->set_radius(0.05);
+  //Load parameters from config file
+  std::ifstream paramFile(filename);
+  if (!paramFile.is_open())
+  {
+    std::cerr << "Unable to open file[" << filename << "]" << std::endl;
+    return parameters;
+  }
+  std::bitset<10> flags;
 
-    gazebo::msgs::Geometry* geometry = new gazebo::msgs::Geometry();
-    geometry->set_type(gazebo::msgs::Geometry_Type_SPHERE);
-    geometry->set_allocated_sphere(sphere);
+  std::string key, value;
+  while (!paramFile.eof() && flags.to_ulong() < 10) {
+    std::getline(paramFile, key, '=');
+    std::getline(paramFile, value);
 
-    //sdf::ElementPtr collision = 
-    gazebo::msgs::Collision collision;
-    collision.set_name(name + "_collision");
-    collision.set_allocated_geometry(geometry);
-    collision.set_allocated_pose(pose);
-
-    gazebo::msgs::Geometry* geometryCopy = new gazebo::msgs::Geometry();
-    *geometryCopy = *geometry;
-
-    gazebo::msgs::Pose* poseCopy = new gazebo::msgs::Pose();
-    *poseCopy = *pose;
-
-    gazebo::msgs::Visual visual;
-    visual.set_allocated_geometry(geometry);
-    visual.set_allocated_pose(pose);
-
-    link->InsertElement(gazebo::msgs::CollisionToSDF(collision));
-    link->InsertElement(gazebo::msgs::VisualToSDF(visual));
-*/
-    static gazebo::transport::NodePtr node(new gazebo::transport::Node());
-    static gazebo::transport::PublisherPtr modelPub = node->Advertise<gazebo::msgs::Model>("~/model/modify");
-    gazebo::msgs::Model modelMsg;
-    model->FillMsg(modelMsg);
-    gazebo::msgs::AddSphereLink(modelMsg, mass, radius);
-    gazebo::msgs::Link link = modelMsg.link(modelMsg.link_size() - 1);
-    link.set_name(name);
-    link.set_allocated_pose(pose);
-    std::cout << "El momento de la verdad xd" << std::endl;
-    model->ProcessMsg(modelMsg);
-    modelPub->Publish(modelMsg);
-    std::cout << "Maribel" << std::endl;
-    return link;
+    if(key == "width") {
+      parameters["width"] = stod(value);
+      flags[0] = 1;
+    }
+    else if(key == "height") {
+      parameters["height"] = stod(value);
+      flags[1] = 1;
+    }
+    else if(key == "vertical_resolution"){
+      parameters["vertical_res"] = stoi(value);
+      flags[2] = 1;
+    }
+    else if(key == "horizontal_resolution"){
+      parameters["horizontal_res"] = stoi(value);
+      flags[3] = 1;
+    }
+    else if(key == "offset_x"){
+      parameters["offset_x"] = stod(value);
+      flags[4] = 1;
+    }
+    else if(key == "offset_y"){
+      parameters["offset_y"] = stod(value);
+      flags[5] = 1;
+    }
+    else if(key == "offset_z"){
+      parameters["offset_z"] = stod(value);
+      flags[6] = 1;
+    }
+    else if(key == "mass"){
+      parameters["mass"] = stod(value);
+      flags[7] = 1;
+    }
+    else if(key == "damping"){
+      parameters["damping"] = stod(value);
+      flags[8] = 1;
+    }
+    else if(key == "stiffness"){
+      parameters["stiffness"] = stod(value);
+      flags[9] = 1;
+    }
+  }
+  return parameters;
 }

@@ -10,9 +10,7 @@
       <uri>model://sun</uri>
     </include>
 
-    <model name="grid">
-      <plugin filename="libgazebo_plugin.so" name="gazebo_plugin"/>
-    </model>
+    <plugin filename="libworld_plugin.so" name="world_plugin"/>
 
   </world>
 </sdf>

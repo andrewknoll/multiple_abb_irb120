@@ -147,10 +147,10 @@ add_library(msd SHARED src/MassSpringDamping.cpp include/MassSpringDamping.hpp i
 target_link_libraries(msd PUBLIC utils grid ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
 add_library(gazebo_plugin SHARED src/GazeboPlugin.cpp include/GazeboPlugin.hpp)
-target_link_libraries(gazebo_plugin PUBLIC msd grid ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+target_link_libraries(gazebo_plugin PUBLIC utils msd grid ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
-#add_library(visual_plugin SHARED src/VisualPlugin.cpp include/VisualPlugin.hpp)
-#target_link_libraries(visual_plugin PUBLIC ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+add_library(world_plugin SHARED src/WorldPlugin.cpp)
+target_link_libraries(world_plugin PUBLIC utils ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
 add_executable(demo src/demo.cpp include/RobotInterface.hpp)
 target_link_libraries(demo PUBLIC ${catkin_LIBRARIES} PUBLIC robot_interface)

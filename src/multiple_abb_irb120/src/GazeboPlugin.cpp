@@ -7,6 +7,7 @@
 #include <string>
 #include <ros/package.h>
 #include "MassSpringDamping.hpp"
+#include "utils.hpp"
 
 using namespace gazebo;
 
@@ -14,64 +15,7 @@ using namespace gazebo;
 DeformableObject::DeformableObject() : ModelPlugin()
 {
   std::cout << "Starting deformable object plugin..." << std::endl;
-  //Get parameters from grid.config file
-  std::string config_file = ros::package::getPath("multiple_abb_irb120") + "/config/grid.config";
-
-  //Load parameters from config file
-  std::ifstream paramFile(config_file);
-  if (!paramFile.is_open())
-  {
-    std::cerr << "Unable to open file[" << config_file << "]" << std::endl;
-    return;
-  }
-  std::bitset<10> flags;
-
-  std::string key, value;
-  while (!paramFile.eof() && flags.to_ulong() < 10) {
-    std::getline(paramFile, key, '=');
-    std::getline(paramFile, value);
-
-    if(key == "width") {
-      width = stof(value);
-      flags[0] = 1;
-    }
-    else if(key == "height") {
-      height = stof(value);
-      flags[1] = 1;
-    }
-    else if(key == "vertical_resolution"){
-      vertical_res = stof(value);
-      flags[2] = 1;
-    }
-    else if(key == "horizontal_resolution"){
-      horizontal_res = stof(value);
-      flags[3] = 1;
-    }
-    else if(key == "offset_x"){
-      offset_x = stof(value);
-      flags[4] = 1;
-    }
-    else if(key == "offset_y"){
-      offset_y = stof(value);
-      flags[5] = 1;
-    }
-    else if(key == "offset_z"){
-      offset_z = stof(value);
-      flags[6] = 1;
-    }
-    else if(key == "mass"){
-      mass = stof(value);
-      flags[7] = 1;
-    }
-    else if(key == "damping"){
-      damping = stof(value);
-      flags[8] = 1;
-    }
-    else if(key == "stiffness"){
-      stiffness = stof(value);
-      flags[9] = 1;
-    }
-  }
+  
 
   std::cout << "Initializing Mass Spring Damping system..." << std::endl;
   msd = std::make_shared<MassSpringDamping>(mass, stiffness, damping, false);
@@ -82,6 +26,16 @@ DeformableObject::DeformableObject() : ModelPlugin()
 void DeformableObject::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf)
 {
   this->model = _parent;
+
+  const std::string PACKAGE_PATH = ros::package::getPath("multiple_abb_irb120");
+  std::map<std::string, double> parameters = readParameters(PACKAGE_PATH + "/config/grid.config");
+  if(parameters.count("width") != 0) width = parameters["width"];
+  if(parameters.count("height") != 0) height = parameters["height"];
+  if(parameters.count("vertical_res") != 0) vertical_res = (int)parameters["vertical_res"];
+  if(parameters.count("horizontal_res") != 0) horizontal_res = (int)parameters["horizontal_res"];
+  if(parameters.count("offset_x") != 0) offset_x = parameters["offset_x"];
+  if(parameters.count("offset_y") != 0) offset_y = parameters["offset_y"];
+  if(parameters.count("offset_z") != 0) offset_z = parameters["offset_z"];
 
   if(!grid_initialized){
     std::cout << "Initializing grid..." << std::endl;

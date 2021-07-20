@@ -6,6 +6,27 @@
 //#include "GazeboPlugin.hpp"
 #include "ros/ros.h"
 #include "ros/package.h"
+#include "utils.hpp"
+
+const double SPHERE_MASS = 0.1;
+const double SPHERE_RADIUS = 0.025;
+
+double calculateInitialComponent(int index, double offset, double size, int resolution) {
+    return offset - (size / 2) + (double)index * (size / (double)resolution);
+}
+
+gazebo::msgs::Pose* calculateInitialPos(int indices[3], double offset[3], double size[3], int resolution[3]){
+    gazebo::msgs::Pose* pos = new gazebo::msgs::Pose();
+    gazebo::msgs::Vector3d* position = new gazebo::msgs::Vector3d();
+    position->set_x(calculateInitialComponent(indices[0], offset[0], size[0], resolution[0]));
+    position->set_y(calculateInitialComponent(indices[1], offset[1], size[1], resolution[1]));
+    position->set_z(calculateInitialComponent(indices[2], offset[2], size[2], resolution[2]));
+    gazebo::msgs::Quaternion* orientation = new gazebo::msgs::Quaternion();
+    pos->set_allocated_position(position);
+    pos->set_allocated_orientation(orientation);
+
+    return pos;
+}
 
 std::string fromFileToString(std::string filename) {
   std::ifstream f(filename);
@@ -15,7 +36,6 @@ std::string fromFileToString(std::string filename) {
   return buffer.str();
 }
 
-const std::string MODEL_PLUGIN_FILENAME = "libgazebo_plugin.so";
 const std::string MODEL_PLUGIN_NAME = "gazebo_plugin";
 const std::string PACKAGE_NAME = "multiple_abb_irb120";
 
@@ -26,55 +46,64 @@ class Factory : public WorldPlugin
   physics::WorldPtr world;
   float width = 5.0, height = 5.0;
   int vertical_res = 10, horizontal_res = 10;
+  float offset_x = 0.0, offset_y = 0.0, offset_z = 1.0;
 
   public: void Load(physics::WorldPtr _parent, sdf::ElementPtr _sdf)
   {
-    /*if(_sdf->HasElement("width")) width = _sdf->Get<float>("width");
-    if(_sdf->HasElement("height")) height = _sdf->Get<float>("height");
-    if(_sdf->HasElement("vertical_res")) vertical_res = _sdf->Get<int>("vertical_res");
-    if(_sdf->HasElement("horizontal_res")) horizontal_res = _sdf->Get<int>("horizontal_res");*/
+    const std::string PACKAGE_PATH = ros::package::getPath("multiple_abb_irb120");
+    std::map<std::string, double> parameters = readParameters(PACKAGE_PATH + "/config/grid.config");
+    if(parameters.count("width") != 0) width = parameters["width"];
+    if(parameters.count("height") != 0) height = parameters["height"];
+    if(parameters.count("vertical_res") != 0) vertical_res = (int)parameters["vertical_res"];
+    if(parameters.count("horizontal_res") != 0) horizontal_res = (int)parameters["horizontal_res"];
+    if(parameters.count("offset_x") != 0) offset_x = parameters["offset_x"];
+    if(parameters.count("offset_y") != 0) offset_y = parameters["offset_y"];
+    if(parameters.count("offset_z") != 0) offset_z = parameters["offset_z"];
         
     this->world = _parent;
 
-    physics::ModelPtr model = this->world->ModelByName("grid");
-
-gazebo::physics::SphereShapePtr sphere =
-      boost::dynamic_pointer_cast<gazebo::physics::SphereShape>(
-        model->GetChildLink("sphere1")->GetCollision("collision")->GetShape());
-
-        gazebo::physics::SphereShapePtr sphereCopy = boost::make_shared<physics::SphereShape>(*sphere);
-
     std::string suffix;
 
-    if(model != nullptr) {
-      //Spawn all links with their respective collision spheres
-      for(int i = 0; i < vertical_res; i++){
-          for(int j = 0; j < horizontal_res; j++){
-              printf("Creating link...\n");
-              suffix = "_" + std::to_string(i) + "_" + std::to_string(j);
-              //Create a new link
-              physics::LinkPtr link = this->world->Physics()->CreateLink(model);
-              link->SetInitialRelativePose(ignition::math::Pose3d((double)i, (double)j, 1.0, 0.0, 0.0, 0.0));
-              link->SetName("link" + suffix);
-             // physics::CollisionPtr col = this->world->Physics()->CreateCollision("sphere", link);
-              //col->SetShape(sphereCopy);
-              //sphereCopy->Init();
-              //printf("voy a llorar link...\n");
-              //col->Init();
-              //printf(" link...\n");
-          }
-      }
-      //model->Update();
-    }
-    else{
-      printf("Error: No 'grid' model found.\n");
-    }
-    
-    printf("Started World Grid Plugin\n");
+    sdf::SDFPtr modelSDF(new sdf::SDF);
+    sdf::init(modelSDF);
 
-    /* ModelPluginPtr plugin = DeformableObject::Create(MODEL_PLUGIN_FILENAME, MODEL_PLUGIN_NAME);
-    plugin->Load(model, _sdf); */
-    //this->world->LoadPlugin("libvisual_plugin.so", "visual_plugin", model);
+    gazebo::msgs::Model model;
+    model.set_name("grid");
+
+    std::cout << "El momento de la verdad xd" << std::endl;
+
+    gazebo::msgs::Plugin* plugin = model.add_plugin();
+    plugin->set_name(MODEL_PLUGIN_NAME);
+    plugin->set_filename("lib" + MODEL_PLUGIN_NAME + ".so");
+
+    double offset[3] = {offset_x, offset_y, offset_z};
+    double size[3] = {width, height, 1};
+    int resolution[3] = {vertical_res, horizontal_res, 1};
+    int indices[3] = {0, 0, 0};
+
+    //Spawn all links with their respective collision spheres
+    for(int i = 0; i < vertical_res; i++){
+      indices[0] = i;
+      for(int j = 0; j < horizontal_res; j++){
+        indices[1] = j;
+        printf("Creating link...\n");
+        suffix = "_" + std::to_string(i * (int)width + j);
+
+        //Create a new link
+        gazebo::msgs::AddSphereLink(model, SPHERE_MASS, SPHERE_RADIUS);
+        gazebo::msgs::Link* link = model.mutable_link(model.link_size()-1);
+
+        link->set_name("link" + suffix);
+        link->set_allocated_pose(calculateInitialPos(indices, offset, size, resolution));
+
+      }
+    }
+
+    modelSDF->Root()->InsertElement(gazebo::msgs::ModelToSDF(model));
+
+    _parent->InsertModelSDF(*modelSDF);
+
+    printf("Started World Grid Plugin\n");
   }
 };
 
