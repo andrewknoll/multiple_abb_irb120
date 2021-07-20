@@ -1,23 +1,26 @@
 #pragma once
 
 #include <ros/ros.h>
-#include "GazeboSphere.hpp"
+#include <gazebo/gazebo.hh>
+#include <gazebo/physics/physics.hh>
 
-float calculateInitialPos(int index, float offset, float size, int resolution);
+double calculateInitialComponent(int index, double offset, double size, int resolution);
+
+gazebo::msgs::Pose* calculateInitialPos(int indices[3], double offset[3], double size[3], int resolution[3]);
 
 namespace multiple_abb_irb120{
     
     class Grid{
     private:
-        ros::NodeHandle* nh;
-        float x, y, z, w, h;
+        double x, y, z, w, h;
         int hr, vr;
-        std::vector<std::vector<GazeboSphere*> > grid;
+        gazebo::physics::ModelPtr model;
+        std::vector<std::vector<gazebo::physics::LinkPtr > > grid;
     public:
-        Grid(ros::NodeHandle* nh, float x_origin, float y_origin, float z_origin, float width, float height, int hres, int vres);
-        GazeboSphere& operator()(int i, int j);
+        Grid(gazebo::physics::ModelPtr model, double x_origin, double y_origin, double z_origin, double width, double height, int hres, int vres);
+        gazebo::physics::LinkPtr get(int i, int j);
+        void setLink(int i, int j, gazebo::physics::LinkPtr link);
         int getRows();
         int getColumns();
-        void update();
     };
 }

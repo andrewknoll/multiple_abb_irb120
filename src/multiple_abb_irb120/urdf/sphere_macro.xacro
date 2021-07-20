@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<model xmlns:xacro="http://ros.org/wiki/xacro">
+<xacro:macro name="sphere_g" params="width height i j off_i off_j off_z">
+
+  <!--<model name ='sphere${i * width + j}'>-->
+    <pose>0 0 .5 0 0 0</pose>
+    <!-- Made static so Gazebo doesn't calculate the gravity interaction-->
+    <static>true</static>
+    <link name ='link'>
+      <collision name ='collision'>
+        <geometry>
+          <sphere><radius>0.025</radius></sphere>
+        </geometry>
+        <origin xyz="${i + off_i} ${j + off_j} ${off_z}"/>
+      </collision>
+      <visual name ='visual'>
+        <geometry>
+          <sphere><radius>0.025</radius></sphere>
+        </geometry>
+      </visual>
+    </link>
+  <!--</model>-->
+
+  <xacro:if value="${height > '0' and height - i > '0' and i >= 0'}">
+    <xacro:if value="${width > '0' and width - j > '0' and j >= '0'}">
+      <xacro:sphere_g width="${width}" height="${height}" i="${i}" j="${j + 1}" off_i="${off_i}" off_j="${off_j}" off_z="${off_z}"/>
+    </xacro:if>
+    <xacro:sphere_g width="${width}" height="${height}" i="${i + 1}" j="0" off_i="${off_i}" off_j="${off_j}" off_z="${off_z}"/>
+  </xacro:if>
+
+  <!-- ros_control plugin -->
+  <!--<gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+      <robotnsspace>${robotns}</robotnsspace>
+      <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
+    </plugin>
+  </gazebo>-->
+
+  </xacro:macro>
+</model>

@@ -4,7 +4,7 @@
   <pose>0 0 .5 0 0 0</pose>
   <!-- Made static so Gazebo doesn't calculate the gravity interaction-->
   <static>true</static>
-  <link name ='link'>
+  <link name ='sphere1'>
     <collision name ='collision'>
       <geometry>
         <sphere><radius>0.025</radius></sphere>
@@ -16,5 +16,6 @@
       </geometry>
     </visual>
   </link>
+  <plugin filename="libgazebo_plugin.so" name="gazebo_plugin"/>
 </model>
 </sdf>

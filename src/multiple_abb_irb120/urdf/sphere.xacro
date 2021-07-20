@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+
+<model name="grid" xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:arg name="width" default="1" />
+  <xacro:arg name="height" default="1"/>
+  <xacro:arg name="off_i" default="0"/>
+  <xacro:arg name="off_j" default="0"/>
+  <xacro:arg name="off_z" default="1"/>
+  <xacro:include filename="$(find multiple_abb_irb120)/urdf/sphere_macro.xacro"/>	
+  <xacro:if value="${height > 0}">
+    <xacro:if value="${width > 0}">
+      <xacro:sphere_g  width="${width}" height="${height}" i="0" j="0" off_i="${off_i}" off_j="${off_j}" off_z="${off_z}"/>
+    </xacro:if>
+  </xacro:if>
+</model>

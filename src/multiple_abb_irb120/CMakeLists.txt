@@ -131,20 +131,26 @@ include_directories(
   # ${Boost_INCLUDE_DIRS}
 )
 
+add_library(factory SHARED src/WorldPlugin.cpp)
+target_link_libraries(factory PUBLIC ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+
 add_library(robot_interface SHARED src/RobotInterface.cpp include/RobotInterface.hpp)
 target_link_libraries(robot_interface PUBLIC ${catkin_LIBRARIES})
 
 add_library(utils SHARED src/utils.cpp include/utils.hpp)
 target_link_libraries(utils PUBLIC ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
-add_library(gazebo_sphere SHARED src/GazeboSphere.cpp include/GazeboSphere.hpp)
-target_link_libraries(gazebo_sphere PUBLIC ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
-
-add_library(grid SHARED src/Grid.cpp include/Grid.hpp include/GazeboSphere.hpp)
-target_link_libraries(grid PUBLIC gazebo_sphere ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+add_library(grid SHARED src/Grid.cpp include/Grid.hpp)
+target_link_libraries(grid PUBLIC ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
 add_library(msd SHARED src/MassSpringDamping.cpp include/MassSpringDamping.hpp include/Grid.hpp include/utils.hpp)
-target_link_libraries(msd PUBLIC utils gazebo_sphere grid ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+target_link_libraries(msd PUBLIC utils grid ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+
+add_library(gazebo_plugin SHARED src/GazeboPlugin.cpp include/GazeboPlugin.hpp)
+target_link_libraries(gazebo_plugin PUBLIC msd grid ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+
+#add_library(visual_plugin SHARED src/VisualPlugin.cpp include/VisualPlugin.hpp)
+#target_link_libraries(visual_plugin PUBLIC ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
 add_executable(demo src/demo.cpp include/RobotInterface.hpp)
 target_link_libraries(demo PUBLIC ${catkin_LIBRARIES} PUBLIC robot_interface)

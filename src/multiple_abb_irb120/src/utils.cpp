@@ -1,57 +1,60 @@
 #include "utils.hpp"
+#include <gazebo/gazebo.hh>
+#include <gazebo/physics/physics.hh>
 
-float normalize(geometry_msgs::Point point) {
-    return sqrtf(point.x * point.x + point.y * point.y + point.z * point.z);
+double normalize(ignition::math::Vector3d point) {
+    return sqrtf(point.X() * point.X() + point.Y() * point.Y() + point.Z() * point.Z());
 }
 
-geometry_msgs::Point operator+ (const geometry_msgs::Point& p1, const geometry_msgs::Point& p2){
-    geometry_msgs::Point result;
-    result.x = p1.x + p2.x;
-    result.y = p1.y + p2.y;
-    result.z = p1.z + p2.z;
-    return result;
+ignition::math::Vector3d toIgnitionVector3d(const Eigen::Vector3d& v){
+    return ignition::math::Vector3d(v(0), v(1), v(2));
 }
 
-geometry_msgs::Point operator- (const geometry_msgs::Point& p1, const geometry_msgs::Point& p2){
-    geometry_msgs::Point result;
-    result.x = p1.x - p2.x;
-    result.y = p1.y - p2.y;
-    result.z = p1.z - p2.z;
-    return result;
+Eigen::Vector3d toEigenVector3d(const ignition::math::Vector3d& v){
+    return Eigen::Vector3d(v.X(), v.Y(), v.Z());
 }
 
-geometry_msgs::Point operator* (const geometry_msgs::Point& p, double f){
-    geometry_msgs::Point result;
-    result.x = p.x * f;
-    result.y = p.y * f;
-    result.z = p.z * f;
-    return result;
-}
+gazebo::msgs::Link makeLinkWithSphereShape(gazebo::physics::ModelPtr model, std::string name, double mass, double radius, gazebo::msgs::Pose* pose){
+    /*sdf::ElementPtr link = model->GetSDF()->AddElement("link");
+    link->SetName(name);
 
-geometry_msgs::Point operator* (double f, const geometry_msgs::Point& p){
-    return p * f;
-}
+    gazebo::msgs::SphereGeom* sphere = new gazebo::msgs::SphereGeom();
+    sphere->set_radius(0.05);
 
-geometry_msgs::Point operator/ (const geometry_msgs::Point& p, double f){
-    geometry_msgs::Point result;
-    result.x = p.x / f;
-    result.y = p.y / f;
-    result.z = p.z / f;
-    return result;
-}
+    gazebo::msgs::Geometry* geometry = new gazebo::msgs::Geometry();
+    geometry->set_type(gazebo::msgs::Geometry_Type_SPHERE);
+    geometry->set_allocated_sphere(sphere);
 
-Eigen::Matrix<float, 1, 3> toRow(const geometry_msgs::Point& p){
-    Eigen::Matrix<float, 1, 3> m;
-    m(0,0) = p.x;
-    m(0,1) = p.y;
-    m(0,2) = p.z;
-    return m;
-}
+    //sdf::ElementPtr collision = 
+    gazebo::msgs::Collision collision;
+    collision.set_name(name + "_collision");
+    collision.set_allocated_geometry(geometry);
+    collision.set_allocated_pose(pose);
 
-geometry_msgs::Point toPoint(const Eigen::Matrix<float, 1, 3> m){
-    geometry_msgs::Point p;
-    p.x = m(0,0);
-    p.y = m(0,1);
-    p.z = m(0,2);
-    return p;
+    gazebo::msgs::Geometry* geometryCopy = new gazebo::msgs::Geometry();
+    *geometryCopy = *geometry;
+
+    gazebo::msgs::Pose* poseCopy = new gazebo::msgs::Pose();
+    *poseCopy = *pose;
+
+    gazebo::msgs::Visual visual;
+    visual.set_allocated_geometry(geometry);
+    visual.set_allocated_pose(pose);
+
+    link->InsertElement(gazebo::msgs::CollisionToSDF(collision));
+    link->InsertElement(gazebo::msgs::VisualToSDF(visual));
+*/
+    static gazebo::transport::NodePtr node(new gazebo::transport::Node());
+    static gazebo::transport::PublisherPtr modelPub = node->Advertise<gazebo::msgs::Model>("~/model/modify");
+    gazebo::msgs::Model modelMsg;
+    model->FillMsg(modelMsg);
+    gazebo::msgs::AddSphereLink(modelMsg, mass, radius);
+    gazebo::msgs::Link link = modelMsg.link(modelMsg.link_size() - 1);
+    link.set_name(name);
+    link.set_allocated_pose(pose);
+    std::cout << "El momento de la verdad xd" << std::endl;
+    model->ProcessMsg(modelMsg);
+    modelPub->Publish(modelMsg);
+    std::cout << "Maribel" << std::endl;
+    return link;
 }

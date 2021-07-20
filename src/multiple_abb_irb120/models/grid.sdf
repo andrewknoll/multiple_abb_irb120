@@ -1,0 +1,8 @@
+<!-- Obtained from http://gazebosim.org/tutorials?tut=plugins_world on 11/JUL/2021-->
+<sdf version ='1.4'>
+<model name ='grid'>
+  <pose>0 0 .5 0 0 0</pose>
+
+  <plugin filename="libgazebo_plugin.so" name="gazebo_plugin"/>
+</model>
+</sdf>

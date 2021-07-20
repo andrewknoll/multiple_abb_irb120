@@ -1,0 +1,11 @@
+<launch>
+  <remap from="/robot1/arm_controller/follow_joint_trajectory" to="/robot1/joint_trajectory_action" />
+  <remap from="/robot1/arm_controller/state" to="/robot1/feedback_states" />
+  <remap from="/robot1/arm_controller/command" to="/robot1/joint_path_command"/>
+  <remap from="/robot2/arm_controller/follow_joint_trajectory" to="/robot2/joint_trajectory_action" />
+  <remap from="/robot2/arm_controller/state" to="/robot2/feedback_states" />
+  <remap from="/robot2/arm_controller/command" to="/robot2/joint_path_command"/>
+  <include file="$(find multiple_abb_irb120)/launch/setup_gazebo.launch">
+    <arg name="robots" value="2"/>
+  </include>
+</launch>

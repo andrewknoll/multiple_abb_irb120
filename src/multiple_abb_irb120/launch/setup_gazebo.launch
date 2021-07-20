@@ -15,7 +15,7 @@
 
   <!-- startup simulated world -->
   <include if="$(arg must_start_world)" file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="world_name" value="worlds/empty.world"/>
+    <arg name="world_name" value="$(find multiple_abb_irb120)/worlds/grid.world"/>
     <arg name="gui" value="true"/>
   </include>
 

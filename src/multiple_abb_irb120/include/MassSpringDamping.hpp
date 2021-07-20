@@ -1,10 +1,11 @@
+#pragma once
 #include "Grid.hpp"
 
 class MassSpringDamping {
 protected:
-    float mass, stiffness, damping;
+    double mass, stiffness, damping;
     bool gravity = true;
 public:
-    MassSpringDamping(float mass, float stiffness, float damping, bool simulateGravity = true);
-    virtual void computePositions(multiple_abb_irb120::Grid grid, float ts);
+    MassSpringDamping(double mass, double stiffness, double damping, bool simulateGravity = true);
+    virtual void computePositions(std::shared_ptr<multiple_abb_irb120::Grid> grid, double ts);
 };

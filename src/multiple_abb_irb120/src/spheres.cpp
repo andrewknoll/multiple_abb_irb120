@@ -107,16 +107,17 @@ int main(int argc, char** argv)
 
   // Start the Grid
   // ^^^^^^^^^^^^^^^^^^^^^^^^^
-  multiple_abb_irb120::Grid grid(&n, 0.0, 0.0, 1.0, 5.0, 5.0, 10, 10);
-  MassSpringDamping msd(0.01, 10.0, 1.0);
-  t0 = std::chrono::steady_clock::now();
+  //multiple_abb_irb120::Grid grid(&n, 0.0, 0.0, 1.0, 5.0, 5.0, 10, 10);
+  //MassSpringDamping msd(0.01, 10.0, 1.0);
+  //t0 = std::chrono::steady_clock::now();
 
-  while(!shutdown_request){
-    t = std::chrono::steady_clock::now();
-    msd.computePositions(grid, std::chrono::duration_cast<std::chrono::microseconds>(t - t0).count() * 1e-06);
-    grid.update();
-    t0 = t;
-  }
+
+  //while(!shutdown_request){
+   // t = std::chrono::steady_clock::now();
+    //msd.computePositions(grid, std::chrono::duration_cast<std::chrono::microseconds>(t - t0).count() * 1e-06);
+    //grid.update();
+    //t0 = t;
+  //}
 
   ros::shutdown();
   return 0;
