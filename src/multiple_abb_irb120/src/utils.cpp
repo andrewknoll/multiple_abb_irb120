@@ -28,48 +28,58 @@ std::map<std::string, double> readParameters(std::string filename) {
 
   std::string key, value;
   while (!paramFile.eof() && flags.to_ulong() < 10) {
-    std::getline(paramFile, key, '=');
+    std::getline(paramFile, key, ':');
     std::getline(paramFile, value);
 
     if(key == "width") {
       parameters["width"] = stod(value);
       flags[0] = 1;
+      std::cout << "Read parameter width = " << parameters["width"] << std::endl; 
     }
     else if(key == "height") {
       parameters["height"] = stod(value);
       flags[1] = 1;
+      std::cout << "Read parameter height = " << parameters["height"] << std::endl;
     }
     else if(key == "vertical_resolution"){
       parameters["vertical_res"] = stoi(value);
       flags[2] = 1;
+      std::cout << "Read parameter vertical_resolution = " << parameters["vertical_res"] << std::endl;
     }
     else if(key == "horizontal_resolution"){
       parameters["horizontal_res"] = stoi(value);
       flags[3] = 1;
+      std::cout << "Read parameter horizontal_resolution = " << parameters["horizontal_res"] << std::endl;
     }
     else if(key == "offset_x"){
       parameters["offset_x"] = stod(value);
       flags[4] = 1;
+      std::cout << "Read parameter offset_x = " << parameters["offset_x"] << std::endl;
     }
     else if(key == "offset_y"){
       parameters["offset_y"] = stod(value);
       flags[5] = 1;
+      std::cout << "Read parameter offset_y = " << parameters["offset_y"] << std::endl;
     }
     else if(key == "offset_z"){
       parameters["offset_z"] = stod(value);
       flags[6] = 1;
+      std::cout << "Read parameter offset_z = " << parameters["offset_z"] << std::endl;
     }
     else if(key == "mass"){
       parameters["mass"] = stod(value);
       flags[7] = 1;
+      std::cout << "Read parameter mass = " << parameters["mass"] << std::endl;
     }
     else if(key == "damping"){
       parameters["damping"] = stod(value);
       flags[8] = 1;
+      std::cout << "Read parameter damping = " << parameters["damping"] << std::endl;
     }
     else if(key == "stiffness"){
       parameters["stiffness"] = stod(value);
       flags[9] = 1;
+      std::cout << "Read parameter stiffness = " << parameters["stiffness"] << std::endl;
     }
   }
   return parameters;

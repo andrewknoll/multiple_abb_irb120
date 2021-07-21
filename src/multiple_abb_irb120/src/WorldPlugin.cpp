@@ -12,7 +12,7 @@ const double SPHERE_MASS = 0.1;
 const double SPHERE_RADIUS = 0.025;
 
 double calculateInitialComponent(int index, double offset, double size, int resolution) {
-    return offset - (size / 2) + (double)index * (size / (double)resolution);
+    return offset + (double)(index - (double)(resolution - 1) / 2) * (size / (double)resolution);
 }
 
 gazebo::msgs::Pose* calculateInitialPos(int indices[3], double offset[3], double size[3], int resolution[3]){
@@ -72,9 +72,11 @@ class Factory : public WorldPlugin
 
     std::cout << "El momento de la verdad xd" << std::endl;
 
+    //Add Model Plugin (models the behaviour of the cloth)
     gazebo::msgs::Plugin* plugin = model.add_plugin();
     plugin->set_name(MODEL_PLUGIN_NAME);
     plugin->set_filename("lib" + MODEL_PLUGIN_NAME + ".so");
+    //If it was necessary, a visual plugin may be added here
 
     double offset[3] = {offset_x, offset_y, offset_z};
     double size[3] = {width, height, 1};
@@ -93,9 +95,10 @@ class Factory : public WorldPlugin
         gazebo::msgs::AddSphereLink(model, SPHERE_MASS, SPHERE_RADIUS);
         gazebo::msgs::Link* link = model.mutable_link(model.link_size()-1);
 
-        link->set_name("link" + suffix);
-        link->set_allocated_pose(calculateInitialPos(indices, offset, size, resolution));
+        gazebo::msgs::Pose* pos = calculateInitialPos(indices, offset, size, resolution);
 
+        link->set_name("link" + suffix);
+        link->set_allocated_pose(pos);
       }
     }
 
