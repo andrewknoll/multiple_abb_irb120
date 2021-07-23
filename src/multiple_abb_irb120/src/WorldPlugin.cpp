@@ -70,8 +70,6 @@ class Factory : public WorldPlugin
     gazebo::msgs::Model model;
     model.set_name("grid");
 
-    std::cout << "El momento de la verdad xd" << std::endl;
-
     //Add Model Plugin (models the behaviour of the cloth)
     gazebo::msgs::Plugin* plugin = model.add_plugin();
     plugin->set_name(MODEL_PLUGIN_NAME);
@@ -89,7 +87,7 @@ class Factory : public WorldPlugin
       for(int j = 0; j < horizontal_res; j++){
         indices[1] = j;
         printf("Creating link...\n");
-        suffix = "_" + std::to_string(i * (int)width + j);
+        suffix = "_" + std::to_string(i * horizontal_res + j);
 
         //Create a new link
         gazebo::msgs::AddSphereLink(model, SPHERE_MASS, SPHERE_RADIUS);

@@ -1,7 +1,6 @@
 <launch>
   <arg name="must_start_world" default="true"/>
 	<arg name="robots" default="2" doc="Number of robots to spawn" />
-  <arg name="asdf" default="[robot1,robot2]"/>
 
   <!-- IMPORTANT: topics must be remapped before using this launchfile
   <remap from="/$(arg base_name)$(arg robots)/arm_controller/follow_joint_trajectory" to="/$(arg base_name)$(arg robots)/joint_trajectory_action" />

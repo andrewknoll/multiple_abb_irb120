@@ -15,10 +15,6 @@ using namespace gazebo;
 DeformableObject::DeformableObject() : ModelPlugin()
 {
   std::cout << "Starting deformable object plugin..." << std::endl;
-  
-
-  std::cout << "Initializing Mass Spring Damping system..." << std::endl;
-  msd = std::make_shared<MassSpringDamping>(mass, stiffness, damping, false);
   t0 = std::chrono::steady_clock::now();
 
 }
@@ -36,6 +32,9 @@ void DeformableObject::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf)
   if(parameters.count("offset_x") != 0) offset_x = parameters["offset_x"];
   if(parameters.count("offset_y") != 0) offset_y = parameters["offset_y"];
   if(parameters.count("offset_z") != 0) offset_z = parameters["offset_z"];
+
+  std::cout << "Initializing Mass Spring Damping system..." << std::endl;
+  msd = std::make_shared<MassSpringDamping>(mass, stiffness, damping, false);
 
   if(!grid_initialized){
     std::cout << "Initializing grid..." << std::endl;

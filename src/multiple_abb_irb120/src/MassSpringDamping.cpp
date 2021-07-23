@@ -23,12 +23,13 @@ void MassSpringDamping::computePositions(std::shared_ptr<multiple_abb_irb120::Gr
     
     for(int i = 0; i < grid->getRows(); i++) {
         for(int j = 0; j < grid->getColumns(); j++) {
+            if(grid->get(i, j).isGrabbed()) continue;
             for(int neighbour_i = -1; neighbour_i <= 1; neighbour_i++) {
                 if(neighbour_i + i < 0
                 || neighbour_i + i >= grid->getRows())
                 continue;
                 for(int neighbour_j = -1; neighbour_j <= 1; neighbour_j++) {
-                    if(neighbour_j == 0 && neighbour_i == 0
+                    if((neighbour_j == 0 && neighbour_i == 0)
                     || neighbour_j + j < 0
                     || neighbour_j + j >= grid->getColumns())
                     continue;
@@ -36,8 +37,8 @@ void MassSpringDamping::computePositions(std::shared_ptr<multiple_abb_irb120::Gr
                     if(c > 3) c--;
                     l0 = grid->getLink(i, j)->InitialRelativePose().Pos() - grid->getLink(i + neighbour_i, j + neighbour_j)->InitialRelativePose().Pos();
                     lt = grid->getLink(i, j)->RelativePose().Pos() - grid->getLink(i + neighbour_i, j + neighbour_j)->RelativePose().Pos();
-                    n0 = normalize(l0);
-                    n = normalize(lt);
+                    n0 = l0.Length();
+                    n = lt.Length();
                     x.row(c) = toEigenVector3d((n0 - n) * (lt / n));
                 }
             }

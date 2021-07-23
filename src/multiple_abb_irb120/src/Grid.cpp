@@ -17,9 +17,10 @@ Grid::Grid(gazebo::physics::ModelPtr model, double x_origin, double y_origin, do
         //Initialize column
         grid[i] = std::vector<GridVertex>(hres);
         for(int j = 0; j < hr; j++){
-            grid[i][j].setLink(model->GetLink("link_" + std::to_string(i * (int)width + j)));
+            grid[i][j].setLink(model->GetLink("link_" + std::to_string(i * hres + j)));
         }
     }
+    grid[0][0].setGrabbed(true);
 }
 
 GridVertex& Grid::get(int i, int j) {

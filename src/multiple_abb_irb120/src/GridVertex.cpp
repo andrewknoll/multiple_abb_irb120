@@ -12,5 +12,18 @@ void GridVertex::setForceCache(ignition::math::Vector3d force_cache) {
     this->force_cache = force_cache;
 }
 void GridVertex::update(){
-    link->SetForce(force_cache);
+    if(grabbed){
+        //link->SetPosition();
+    }
+    else{
+        link->SetForce(force_cache);
+    }
+}
+bool GridVertex::isGrabbed() {
+    return grabbed;
+}
+void GridVertex::setGrabbed(bool grabbed) {
+    this->grabbed = grabbed;
+    link->SetLinkStatic(grabbed);
+    link->SetGravityMode(!grabbed);
 }
