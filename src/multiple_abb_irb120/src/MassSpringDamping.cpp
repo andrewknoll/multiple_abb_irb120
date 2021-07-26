@@ -2,7 +2,7 @@
 #include "Grid.hpp"
 #include <Eigen/Core>
 #include "utils.hpp"
-
+#include <numeric>
 
 
 MassSpringDamping::MassSpringDamping(double mass, double stiffness, double damping, bool simulateGravity) :
@@ -12,12 +12,9 @@ void MassSpringDamping::computePositions(std::shared_ptr<multiple_abb_irb120::Gr
     int c;
     double n, n0;
     double ts_p2 = ts * ts;
-    Eigen::Matrix<double, 1, 8> ones = Eigen::Matrix<double, 1, 8>::Ones();
-    Eigen::Matrix<double, 1, 8> k = stiffness * ones;
-    Eigen::Matrix<double, 8, 3> x = Eigen::Matrix<double, 8, 3>::Zero();
-    Eigen::Vector3d f_g, forces;
+    std::vector <ignition::math::Vector3d> x(8);
+    ignition::math::Vector3d forces, f_g = {0, 0, -9.81};
     ignition::math::Vector3d result;
-    f_g << 0, 0, -9.81;
 
     ignition::math::Vector3d l0, lt;
     
@@ -35,30 +32,45 @@ void MassSpringDamping::computePositions(std::shared_ptr<multiple_abb_irb120::Gr
                     continue;
                     c = neighbour_j + 1 + 3*(neighbour_i + 1);
                     if(c > 3) c--;
+                    //Initial pos is relative to grid
                     l0 = grid->getLink(i, j)->InitialRelativePose().Pos() - grid->getLink(i + neighbour_i, j + neighbour_j)->InitialRelativePose().Pos();
-                    lt = grid->getLink(i, j)->RelativePose().Pos() - grid->getLink(i + neighbour_i, j + neighbour_j)->RelativePose().Pos();
+                    //Current pos is in world coordinates (since it's a substraction, the result is also relative)
+                    lt = grid->getLink(i, j)->WorldCoGPose().Pos() - grid->getLink(i + neighbour_i, j + neighbour_j)->WorldCoGPose().Pos();
                     n0 = l0.Length();
                     n = lt.Length();
-                    x.row(c) = toEigenVector3d((n0 - n) * (lt / n));
+                    x[c] = stiffness * (n0 - n) * (lt / n);
+                    if(i == 1 && j == 1) {
+                        std::cout << "n: " << n << std::endl;
+                        std::cout << "neigh: " << neighbour_i << " " << neighbour_j << std::endl;
+                        std::cout << "inipos: " << grid->getLink(i + neighbour_i, j + neighbour_j)->InitialRelativePose().Pos() << std::endl;
+                        std::cout << "pos: " << grid->getLink(i + neighbour_i, j + neighbour_j)->WorldCoGPose().Pos() << std::endl;
+                        std::cout << "row: " << x[c].X() << " " << x[c].Y() << " " << x[c].Z() << std::endl;
+                    }
                 }
             }
-            forces = k*x;
-            //Forces manually applied + damping + gravity
-            result = toIgnitionVector3d(forces) + damping * grid->getLink(i, j)->RelativeLinearVel();
+            forces = std::accumulate(x.begin(), x.end(), ignition::math::Vector3d::Zero);
+            //Forces manually applied - damping + gravity
+            result = forces - damping * grid->getLink(i, j)->RelativeLinearVel();
+            if(i == 1 && j == 1) {
+                        std::cout << "vel: " << grid->getLink(i, j)->RelativeLinearVel().X() << " " << grid->getLink(i, j)->RelativeLinearVel().Y() << " " << grid->getLink(i, j)->RelativeLinearVel().Z() << std::endl;
+                    }
             if(gravity){
-                result += toIgnitionVector3d(mass * f_g);
+                result += mass * f_g;
             }
             grid->get(i, j).setForceCache(result);
+            if(i == 1 && j == 1) {
+                std::cout << "Forces: " << result.X() << " " << result.Y() << " " << result.Z() << std::endl;
+                std::cout << "Applied: " << grid->getLink(i, j)->RelativeForce().X() << " " << grid->getLink(i, j)->RelativeForce().Y() << " " << grid->getLink(i, j)->RelativeForce().Z() << std::endl;
+            }
         }
     }
-    /*
+    
     //ts is assumed to be small
-    for(int i = 0; i < grid.getRows(); i++){
-        for(int j = 0; j < grid.getColumns(); j++){
-            grid(i, j).setAcc(grid(i, j).getF() / mass);
-            //cmd_vel ????
-            grid(i, j).setVel(grid(i, j).getVel() + grid(i, j).getAcc() * ts);
-            grid(i, j).setPosition(grid(i, j)->RelativePose() + toPoint(grid(i, j).getVel() * ts));
+    /*for(int i = 0; i < grid->getRows(); i++){
+        for(int j = 0; j < grid->getColumns(); j++){
+            //grid->getLink(i, j).setAcc(grid(i, j).getF() / mass);
+            grid->getLink(i, j)->SetLinearVel(grid->getLink(i, j)->RelativeLinearVel() + grid->get(i, j).getForceCache() / mass * ts);
+            //grid(i, j).setPosition(grid(i, j)->RelativePose() + toPoint(grid(i, j).getVel() * ts));
         }
     }*/
 }

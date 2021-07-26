@@ -8,6 +8,9 @@ void GridVertex::setLink(gazebo::physics::LinkPtr link) {
 const gazebo::physics::LinkPtr GridVertex::getLink() {
     return link;
 }
+ignition::math::Vector3d GridVertex::getForceCache() {
+    return force_cache;
+}
 void GridVertex::setForceCache(ignition::math::Vector3d force_cache) {
     this->force_cache = force_cache;
 }

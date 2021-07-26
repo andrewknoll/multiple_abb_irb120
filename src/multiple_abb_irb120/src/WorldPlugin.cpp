@@ -8,7 +8,9 @@
 #include "ros/package.h"
 #include "utils.hpp"
 
-const double SPHERE_MASS = 0.1;
+const std::string MODEL_PLUGIN_NAME = "gazebo_plugin";
+const std::string PACKAGE_NAME = "multiple_abb_irb120";
+
 const double SPHERE_RADIUS = 0.025;
 
 double calculateInitialComponent(int index, double offset, double size, int resolution) {
@@ -36,9 +38,6 @@ std::string fromFileToString(std::string filename) {
   return buffer.str();
 }
 
-const std::string MODEL_PLUGIN_NAME = "gazebo_plugin";
-const std::string PACKAGE_NAME = "multiple_abb_irb120";
-
 namespace gazebo
 {
 class Factory : public WorldPlugin
@@ -47,10 +46,11 @@ class Factory : public WorldPlugin
   float width = 5.0, height = 5.0;
   int vertical_res = 10, horizontal_res = 10;
   float offset_x = 0.0, offset_y = 0.0, offset_z = 1.0;
+  float mass = 0.1;
 
   public: void Load(physics::WorldPtr _parent, sdf::ElementPtr _sdf)
   {
-    const std::string PACKAGE_PATH = ros::package::getPath("multiple_abb_irb120");
+    const std::string PACKAGE_PATH = ros::package::getPath(PACKAGE_NAME);
     std::map<std::string, double> parameters = readParameters(PACKAGE_PATH + "/config/grid.config");
     if(parameters.count("width") != 0) width = parameters["width"];
     if(parameters.count("height") != 0) height = parameters["height"];
@@ -59,6 +59,7 @@ class Factory : public WorldPlugin
     if(parameters.count("offset_x") != 0) offset_x = parameters["offset_x"];
     if(parameters.count("offset_y") != 0) offset_y = parameters["offset_y"];
     if(parameters.count("offset_z") != 0) offset_z = parameters["offset_z"];
+    if(parameters.count("mass") != 0) mass = parameters["mass"] / ((double)horizontal_res * (double)vertical_res);
         
     this->world = _parent;
 
@@ -90,8 +91,9 @@ class Factory : public WorldPlugin
         suffix = "_" + std::to_string(i * horizontal_res + j);
 
         //Create a new link
-        gazebo::msgs::AddSphereLink(model, SPHERE_MASS, SPHERE_RADIUS);
+        gazebo::msgs::AddSphereLink(model, mass, SPHERE_RADIUS);
         gazebo::msgs::Link* link = model.mutable_link(model.link_size()-1);
+        //link->set_gravity(false);
 
         gazebo::msgs::Pose* pos = calculateInitialPos(indices, offset, size, resolution);
 
