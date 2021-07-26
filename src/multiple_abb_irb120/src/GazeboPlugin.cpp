@@ -32,8 +32,22 @@ void DeformableObject::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf)
   if(parameters.count("offset_x") != 0) offset_x = parameters["offset_x"];
   if(parameters.count("offset_y") != 0) offset_y = parameters["offset_y"];
   if(parameters.count("offset_z") != 0) offset_z = parameters["offset_z"];
+  if(parameters.count("mass") != 0) mass = parameters["mass"];
+  if(parameters.count("stiffness") != 0) stiffness = parameters["stiffness"];
+  if(parameters.count("damping") != 0) damping = parameters["damping"];
 
   std::cout << "Initializing Mass Spring Damping system..." << std::endl;
+  std::cout << "Parameters: " << std::endl;
+  std::cout << "width: " << width << std::endl;
+  std::cout << "height: " << height << std::endl;
+  std::cout << "vertical_res: " << vertical_res << std::endl;
+  std::cout << "horizontal_res: " << horizontal_res << std::endl;
+  std::cout << "offset_x: " << offset_x << std::endl;
+  std::cout << "offset_y: " << offset_y << std::endl;
+  std::cout << "offset_z: " << offset_z << std::endl;
+  std::cout << "mass: " << mass << std::endl;
+  std::cout << "stiffness: " << stiffness << std::endl;
+  std::cout << "damping: " << damping << std::endl;
   msd = std::make_shared<MassSpringDamping>(mass, stiffness, damping, false);
 
   if(!grid_initialized){
@@ -52,7 +66,7 @@ void DeformableObject::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf)
 
 void DeformableObject::OnUpdate() {
   t = std::chrono::steady_clock::now();
-  msd->computePositions(grid, std::chrono::duration_cast<std::chrono::microseconds>(t - t0).count() * 1e-06);
+  msd->computePositions(grid/*, std::chrono::duration_cast<std::chrono::microseconds>(t - t0).count() * 1e-06*/);
   grid->update();
   t0 = t;
 }

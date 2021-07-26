@@ -59,7 +59,7 @@ class Factory : public WorldPlugin
     if(parameters.count("offset_x") != 0) offset_x = parameters["offset_x"];
     if(parameters.count("offset_y") != 0) offset_y = parameters["offset_y"];
     if(parameters.count("offset_z") != 0) offset_z = parameters["offset_z"];
-    if(parameters.count("mass") != 0) mass = parameters["mass"] / ((double)horizontal_res * (double)vertical_res);
+    if(parameters.count("mass") != 0) mass = parameters["mass"];
         
     this->world = _parent;
 
@@ -93,7 +93,7 @@ class Factory : public WorldPlugin
         //Create a new link
         gazebo::msgs::AddSphereLink(model, mass, SPHERE_RADIUS);
         gazebo::msgs::Link* link = model.mutable_link(model.link_size()-1);
-        //link->set_gravity(false);
+        //link->set_kinematic(true);
 
         gazebo::msgs::Pose* pos = calculateInitialPos(indices, offset, size, resolution);
 
