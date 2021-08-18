@@ -1,9 +1,19 @@
 #include "utils.hpp"
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
+#include <geometry_msgs/Pose.h>
 
-double normalize(ignition::math::Vector3d point) {
-    return sqrtf(point.X() * point.X() + point.Y() * point.Y() + point.Z() * point.Z());
+bool isNear(const geometry_msgs::Pose &pose1, const geometry_msgs::Pose &pose2, double distance) {
+  double x = pose1.position.x - pose2.position.x;
+  double y = pose1.position.y - pose2.position.y;
+  double z = pose1.position.z - pose2.position.z;
+  return (sqrt(x*x + y*y + z*z) < distance);
+}
+
+ignition::math::Pose3d toIgnitionPose3d(const geometry_msgs::Pose& p){
+  ignition::math::Quaternion<double> qua(p.orientation.w, p.orientation.x, p.orientation.y, p.orientation.z);
+  ignition::math::Pose3d pose(p.position.x, p.position.y, p.position.z, qua.Roll(), qua.Pitch(), qua.Yaw());
+  return pose;
 }
 
 ignition::math::Vector3d toIgnitionVector3d(const Eigen::Vector3d& v){

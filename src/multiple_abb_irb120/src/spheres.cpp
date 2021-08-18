@@ -54,7 +54,6 @@
 #include <moveit_msgs/CollisionObject.h>
 
 #include "gazebo/common/common.hh"
-#include <gazebo_msgs/SpawnModel.h>
 #include "gazebo/gazebo.hh"
 
 #include <iostream>     // std::streambuf, std::cout
@@ -64,12 +63,18 @@
 #include <ros/ros.h>
 
 #include "RobotInterface.hpp"
-#include "Grid.hpp"
+#include "GridState.hpp"
 #include <chrono>
-#include "MassSpringDamping.hpp"
 
 #include <signal.h>
 #include <chrono>
+
+#include "utils.hpp"
+
+#include <multiple_abb_irb120/GrabPetition.h>
+#include <multiple_abb_irb120/GrabPosition.h>
+
+#include <ros/console.h>
 
 bool volatile shutdown_request = false;
 
@@ -82,42 +87,86 @@ void signalHandler( int signum ) {
   shutdown_request = true;
 }
 
-
 int main(int argc, char** argv)
 {
-  signal(SIGINT, signalHandler);
-  signal(SIGKILL, signalHandler);
-  signal(SIGTERM, signalHandler);
+  //signal(SIGINT, signalHandler);
+  //signal(SIGKILL, signalHandler);
+  //signal(SIGTERM, signalHandler);
   //
   // Setup
   // ^^^^^
-  std::string name_ = "sphere_spawning";
-  ros::init(argc, argv, name_, ros::init_options::NoSigintHandler);
+
+if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) ) {
+   ros::console::notifyLoggerLevelsChanged();
+}
+
+  std::string name_ = "robots_controller";
+  ros::init(argc, argv, name_);
   ros::NodeHandle n;
   ros::AsyncSpinner spinner(1);
   spinner.start();
 
-  std::chrono::steady_clock::time_point t0, t;
+  
 
-  std::vector<RobotInterface> robots = {RobotInterface("manipulator", "robot1"), RobotInterface("manipulator", "robot2")};
 
+  RobotInterface robots[2] = {RobotInterface("manipulator", "robot1"), RobotInterface("manipulator", "robot2")};
+  
   moveit::planning_interface::PlanningSceneInterface planning_scene_interface("/robot1");
+  for(auto& o : planning_scene_interface.getKnownObjectNames()) {
+    std::cout << "Object: " << o << std::endl;
+  }
 
   std::shared_ptr <moveit::planning_interface::MoveGroupInterface> move_group;
 
+  ros::Rate loop_rate(10);
+
   // Start the Grid
   // ^^^^^^^^^^^^^^^^^^^^^^^^^
-  //multiple_abb_irb120::Grid grid(&n, 0.0, 0.0, 1.0, 5.0, 5.0, 10, 10);
-  //MassSpringDamping msd(0.01, 10.0, 1.0);
-  //t0 = std::chrono::steady_clock::now();
+  std::vector<int> resolution;
+  ros::param::get("/grid/resolution", resolution);
+  GridState gridState(resolution);
+
+  ros::Subscriber sub = n.subscribe("/gazebo/link_states", 1000, &GridState::updateCallback, &gridState);
+  ros::Publisher grabPub = n.advertise<multiple_abb_irb120::GrabPetition>("/grid/grab_petitions", 1000);
+  multiple_abb_irb120::GrabPetition grabMsg;
 
 
-  //while(!shutdown_request){
-   // t = std::chrono::steady_clock::now();
-    //msd.computePositions(grid, std::chrono::duration_cast<std::chrono::microseconds>(t - t0).count() * 1e-06);
-    //grid.update();
-    //t0 = t;
-  //}
+  move_group = robots[0].getMoveGroup();
+
+  geometry_msgs::Pose target_pose;
+
+  while(ros::ok() && !isNear(move_group->getCurrentPose().pose, gridState.getPose(0, 0), 0.1)){
+    //std::cout << "Sphere pose: " << gridState.getPose(0, 0).position.x << " " << gridState.getPose(0, 0).position.y << " " << gridState.getPose(0, 0).position.z << std::endl;
+    if(target_pose != gridState.getPose(0, 0)){
+      target_pose = gridState.getPose(0, 0);
+      move_group->setPositionTarget(target_pose.position.x, target_pose.position.y, target_pose.position.z);
+      move_group->asyncMove();
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+  }
+
+  move_group->stop();
+
+  std_msgs::String topicName;
+  topicName.data = "/robot1/end_effector_pose";
+  grabMsg.topic = topicName;
+  grabMsg.i = 0;
+  grabMsg.j = 0;
+  grabMsg.grab = true;
+
+  grabPub.publish(grabMsg);
+
+  std::cout << "Tuto bene" << std::endl;
+
+  while(ros::ok()){
+    move_group->setRandomTarget();
+    move_group->move();
+  }
+
+  for(auto& robot : robots){
+    std::cout << "aoignaoedrnaoehnpsanhpahgahagfadastananf" << std::endl;
+    robot.shutdown();
+  }
 
   ros::shutdown();
   return 0;

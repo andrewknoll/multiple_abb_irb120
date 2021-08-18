@@ -20,7 +20,7 @@ Grid::Grid(gazebo::physics::ModelPtr model, double x_origin, double y_origin, do
             grid[i][j].setLink(model->GetLink("link_" + std::to_string(i * hres + j)));
         }
     }
-    grid[1][1].setGrabbed(true);
+    //grid[1][1].setGrabbed(true);
 }
 
 GridVertex& Grid::get(int i, int j) {

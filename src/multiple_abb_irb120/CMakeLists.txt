@@ -9,6 +9,21 @@ add_compile_options(-std=c++11)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 
+find_package(catkin REQUIRED COMPONENTS
+  roscpp
+  rospy
+  std_msgs
+  geometry_msgs
+  moveit_ros_planning_interface
+  moveit_msgs
+  moveit_visual_tools
+  gazebo_ros
+  message_generation
+)
+# find_package(Boost REQUIRED COMPONENTS system)
+
+find_package(gazebo REQUIRED)
+
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
@@ -43,11 +58,11 @@ add_compile_options(-std=c++11)
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+add_message_files(
+  FILES
+  GrabPetition.msg
+  GrabPosition.msg
+)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -64,10 +79,11 @@ add_compile_options(-std=c++11)
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
-# )
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+  geometry_msgs
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -103,33 +119,15 @@ catkin_package(
 #  LIBRARIES multiple_abb_irb120
 #  CATKIN_DEPENDS other_catkin_pkg
 #  DEPENDS system_lib
+  CATKIN_DEPENDS message_runtime
 )
 
 ###########
 ## Build ##
 ###########
 
-find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  rospy
-  std_msgs
-  moveit_ros_planning_interface
-  moveit_msgs
-  moveit_visual_tools
-  gazebo_ros
-)
-# find_package(Boost REQUIRED COMPONENTS system)
-
-find_package(gazebo REQUIRED)
-
 link_directories(${GAZEBO_LIBRARY_DIRS})
-include_directories(${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS} ${GAZEBO_INCLUDE_DIRS})
-
-include_directories(
-  include
-  ${catkin_INCLUDE_DIRS}
-  # ${Boost_INCLUDE_DIRS}
-)
+include_directories(include ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS} ${GAZEBO_INCLUDE_DIRS})
 
 add_library(factory SHARED src/WorldPlugin.cpp)
 target_link_libraries(factory PUBLIC ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
@@ -146,7 +144,7 @@ target_link_libraries(utils PUBLIC ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 add_library(grid SHARED src/Grid.cpp include/Grid.hpp)
 target_link_libraries(grid PUBLIC grid_vertex ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
-add_library(msd SHARED src/MassSpringDamping.cpp include/MassSpringDamping.hpp include/Grid.hpp include/utils.hpp)
+add_library(msd SHARED src/MassSpringDamping.cpp include/MassSpringDamping.hpp)
 target_link_libraries(msd PUBLIC utils grid grid_vertex ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
 add_library(gazebo_plugin SHARED src/GazeboPlugin.cpp include/GazeboPlugin.hpp)
@@ -158,15 +156,19 @@ target_link_libraries(world_plugin PUBLIC utils ${catkin_LIBRARIES} ${GAZEBO_LIB
 add_executable(demo src/demo.cpp include/RobotInterface.hpp)
 target_link_libraries(demo PUBLIC ${catkin_LIBRARIES} PUBLIC robot_interface)
 
-add_executable(spheres src/spheres.cpp include/RobotInterface.hpp include/Grid.hpp)
-target_link_libraries(spheres PUBLIC ${GAZEBO_LIBRARIES} PUBLIC ${catkin_LIBRARIES} PUBLIC robot_interface PUBLIC grid PUBLIC msd)
+add_library(grid_state SHARED src/GridState.cpp include/GridState.hpp)
+target_link_libraries(grid_state PUBLIC ${GAZEBO_LIBRARIES} ${catkin_LIBRARIES})
+
+add_executable(spheres src/spheres.cpp)
+target_link_libraries(spheres PUBLIC ${GAZEBO_LIBRARIES} PUBLIC ${catkin_LIBRARIES} PUBLIC robot_interface PUBLIC grid_state PUBLIC utils)
+
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-include_directories(
+#include_directories(
 # include
 # ${catkin_INCLUDE_DIRS}
-)
+#)
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
