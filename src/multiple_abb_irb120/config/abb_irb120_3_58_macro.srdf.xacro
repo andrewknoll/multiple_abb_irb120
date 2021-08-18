@@ -25,10 +25,10 @@
 
     <group_state name="demo_pose" group="${robotns}_manipulator">
         <joint name="joint_1" value="0" />
-        <joint name="joint_2" value="12" />
-        <joint name="joint_3" value="-6" />
+        <joint name="joint_2" value="0.21" />
+        <joint name="joint_3" value="-0.1" />
         <joint name="joint_4" value="0" />
-        <joint name="joint_5" value="84" />
+        <joint name="joint_5" value="1.466" />
         <joint name="joint_6" value="0" />
     </group_state>
 
