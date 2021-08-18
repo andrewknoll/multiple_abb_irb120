@@ -7,12 +7,12 @@
 #include <ignition/math/Pose3.hh>
 
 
-MassSpringDamping::MassSpringDamping(double mass, double stiffness, double damping, bool simulateGravity) :
-    mass(mass), stiffness(stiffness), damping(damping), gravity(simulateGravity) {}
+MassSpringDamping::MassSpringDamping(double mass, double stiffness, double damping, bool simulateGravity, ignition::math::Vector3d gravity) :
+    mass(mass), stiffness(stiffness), damping(damping), gravity(simulateGravity), g(gravity) {}
 
 void MassSpringDamping::computePositions(std::shared_ptr<multiple_abb_irb120::Grid> grid/*, double ts*/) {
     
-    unsigned int nThreads = std::thread::hardware_concurrency();
+    unsigned int nThreads = 1/*std::thread::hardware_concurrency()*/;
 
     std::vector<std::thread> threads_vec;
 
@@ -30,11 +30,11 @@ void MassSpringDamping::computePositions(std::shared_ptr<multiple_abb_irb120::Gr
 }
 
 void MassSpringDamping::computeRegion(std::shared_ptr<multiple_abb_irb120::Grid> grid/*, double ts*/, int regionPos, int regionSize) {
-    int i, j, c;
+    int i, j;
     double n, n0;
     //double ts_p2 = ts * ts;
-    std::vector <ignition::math::Vector3d> x(8);
-    ignition::math::Vector3d forces;
+    std::vector <ignition::math::Vector3d> f, d;
+    ignition::math::Vector3d forces, damping_forces;
     ignition::math::Vector3d result;
 
     ignition::math::Vector3d l0, lt;
@@ -45,6 +45,8 @@ void MassSpringDamping::computeRegion(std::shared_ptr<multiple_abb_irb120::Grid>
         
 
         if(grid->get(i, j).isGrabbed()){
+            f.clear();
+            d.clear();
             regionPos++;
             continue;
         }
@@ -57,38 +59,56 @@ void MassSpringDamping::computeRegion(std::shared_ptr<multiple_abb_irb120::Grid>
                 || neighbour_j + j < 0
                 || neighbour_j + j >= grid->getColumns())
                 continue;
-                c = neighbour_j + 1 + 3*(neighbour_i + 1);
-                if(c > 3) c--;
                 //Initial pos is relative to grid
                 l0 = grid->getLink(i, j)->InitialRelativePose().Pos() - grid->getLink(i + neighbour_i, j + neighbour_j)->InitialRelativePose().Pos();
-                //Current pos is in world coordinates (since it's a substraction, the result is also relative)
-                lt = grid->getLink(i, j)->WorldCoGPose().Pos() - grid->getLink(i + neighbour_i, j + neighbour_j)->WorldCoGPose().Pos();
+                lt = grid->getLink(i, j)->RelativePose().Pos() - grid->getLink(i + neighbour_i, j + neighbour_j)->RelativePose().Pos();
                 n0 = l0.Length();
                 n = lt.Length();
-                x[c] = stiffness * (n0 - n) * (lt / n);
-                /*if(i == 1 && j == 1) {
-                    std::cout << "n: " << n << std::endl;
+                f.push_back(-stiffness * (n - n0) * (lt / n));
+                d.push_back(-damping * (grid->getLink(i, j)->RelativeLinearVel() - grid->getLink(i + neighbour_i, j + neighbour_j)->RelativeLinearVel()));
+                if(i == 4 && j == 9) {
+                    std::cout << "=================================" << std::endl;
                     std::cout << "neigh: " << neighbour_i << " " << neighbour_j << std::endl;
+                    std::cout << "n: " << n << std::endl;
+                    std::cout << "n0:" << n0 << std::endl;
+                    std::cout << "l0: " << l0.X() << " " << l0.Y() << " " << l0.Z() << std::endl;
+                    std::cout << "lt: " << lt.X() << " " << lt.Y() << " " << lt.Z() << std::endl;
+                    std::cout << "myInipos: " << grid->getLink(i, j)->InitialRelativePose().Pos() << std::endl;
+                    std::cout << "mypos: " << grid->getLink(i, j)->RelativePose().Pos() << std::endl;
                     std::cout << "inipos: " << grid->getLink(i + neighbour_i, j + neighbour_j)->InitialRelativePose().Pos() << std::endl;
-                    std::cout << "pos: " << grid->getLink(i + neighbour_i, j + neighbour_j)->WorldCoGPose().Pos() << std::endl;
-                    std::cout << "row: " << x[c].X() << " " << x[c].Y() << " " << x[c].Z() << std::endl;
-                }*/
+                    std::cout << "pos: " << grid->getLink(i + neighbour_i, j + neighbour_j)->RelativePose().Pos() << std::endl;
+                    std::cout << "stiffness: " << f.back().X() << " " << f.back().Y() << " " << f.back().Z() << std::endl;
+                    std::cout << "damping: " << d.back().X() << " " << d.back().Y() << " " << d.back().Z() << std::endl;
+                }
             }
         }
-        forces = std::accumulate(x.begin(), x.end(), ignition::math::Vector3d::Zero);
+        forces = std::accumulate(f.begin(), f.end(), ignition::math::Vector3d::Zero);
+        damping_forces = std::accumulate(d.begin(), d.end(), ignition::math::Vector3d::Zero);
+        //forces = std::accumulate(f.begin(), f.end(), ignition::math::Vector3d::Zero, std::plus<ignition::math::Vector3d>());
+        //forces = ignition::math::Vector3d::Zero;
+        /*for(auto &v : f) {
+            std::cout << "V: " << v.X() << " " << v.Y() << " " << v.Z() << std::endl;
+            forces += v;
+            std::cout << "F: " << forces.X() << " " << forces.Y() << " " << forces.Z() << std::endl;
+        }
+        if(i == 4 && j == 9) {
+            std::cout << "ACCUM: " << forces.X() << " " << forces.Y() << " " << forces.Z() << std::endl;
+        }*/
         //Forces manually applied - damping + gravity
-        result = forces - damping * grid->getLink(i, j)->RelativeLinearVel();
-        /*if(i == 1 && j == 1) {
-                    std::cout << "vel: " << grid->getLink(i, j)->RelativeLinearVel().X() << " " << grid->getLink(i, j)->RelativeLinearVel().Y() << " " << grid->getLink(i, j)->RelativeLinearVel().Z() << std::endl;
-                }*/
+        result = forces + damping_forces - mass * g;
+        /*if(i == 4 && j == 9) {
+            std::cout << "vel: " << grid->getLink(i, j)->RelativeLinearVel().X() << " " << grid->getLink(i, j)->RelativeLinearVel().Y() << " " << grid->getLink(i, j)->RelativeLinearVel().Z() << std::endl;
+        }*/
         if(gravity){
             result += mass * f_g;
         }
         grid->get(i, j).setForceCache(result);
-        /*if(i == 1 && j == 1) {
+        if(i == 4 && j == 9) {
             std::cout << "Forces: " << result.X() << " " << result.Y() << " " << result.Z() << std::endl;
-            std::cout << "Applied: " << grid->getLink(i, j)->RelativeForce().X() << " " << grid->getLink(i, j)->RelativeForce().Y() << " " << grid->getLink(i, j)->RelativeForce().Z() << std::endl;
-        }*/
+            //std::cout << "Applied: " << grid->getLink(i, j)->RelativeForce().X() << " " << grid->getLink(i, j)->RelativeForce().Y() << " " << grid->getLink(i, j)->RelativeForce().Z() << std::endl;
+        }
+        f.clear();
+        d.clear();
         regionPos++;
     }
     
