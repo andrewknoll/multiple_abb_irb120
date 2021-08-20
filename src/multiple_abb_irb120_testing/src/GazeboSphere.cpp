@@ -26,7 +26,7 @@ GazeboSphere::GazeboSphere(ros::NodeHandle* nh, float x, float y, float z) : nh(
     position_client = nh->serviceClient<gazebo_msgs::SetModelState>(GAZEBO_SET_MODEL_STATE);
 
     gazebo_msgs::SpawnModel model;
-    model.request.model_xml = fromFileToString(ros::package::getPath("multiple_abb_irb120") + SPHERE_SDF);
+    model.request.model_xml = fromFileToString(ros::package::getPath("multiple_abb_irb120_testing") + SPHERE_SDF);
     model.request.model_name = "sphere" + std::to_string(ID);
     model.request.reference_frame="world";
     setPosition(x, y, z);

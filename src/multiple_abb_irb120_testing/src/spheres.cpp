@@ -67,6 +67,7 @@
 #include "Grid.hpp"
 
 #include <signal.h>
+#include <chrono>
 
 bool volatile shutdown_request = false;
 
@@ -94,15 +95,22 @@ int main(int argc, char** argv)
   ros::AsyncSpinner spinner(1);
   spinner.start();
 
-  std::vector<RobotInterface> robots = {RobotInterface("manipulator", "robot1"), RobotInterface("manipulator", "robot2")};
+  //std::vector<RobotInterface> robots = {RobotInterface("manipulator", "robot1"), RobotInterface("manipulator", "robot2")};
 
-  moveit::planning_interface::PlanningSceneInterface planning_scene_interface("/robot1");
+  //moveit::planning_interface::PlanningSceneInterface planning_scene_interface("/robot1");
 
-  std::shared_ptr <moveit::planning_interface::MoveGroupInterface> move_group;
+  //std::shared_ptr <moveit::planning_interface::MoveGroupInterface> move_group;
 
   // Start the Grid
   // ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+  auto start = std::chrono::high_resolution_clock::now();
   multiple_abb_irb120::Grid grid(&n, 0.0, 0.0, 1.0, 5.0, 5.0, 10, 10);
+  auto finish = std::chrono::high_resolution_clock::now();
+
+  std::chrono::duration<double> elapsed = finish - start;
+
+  std::cout << "Time taken: " << elapsed.count() << std::endl;
 
   while(!shutdown_request){
     grid.update();

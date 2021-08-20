@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(multiple_abb_irb120)
+project(multiple_abb_irb120_testing)
 
 add_compile_options(-std=c++11)
 ## Compile as C++11, supported in ROS Kinetic and newer

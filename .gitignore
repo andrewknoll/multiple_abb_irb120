@@ -3,12 +3,12 @@
 !/.gitignore
 !/src/
 /src/*
-!/src/multiple_abb_irb120/
-!src/multiple_abb_irb120/src
-!src/multiple_abb_irb120/CMakeLists.txt
-!src/multiple_abb_irb120/package.xml
-!src/multiple_abb_irb120/launch
-src/multiple_abb_irb120/launch/temp/
+!/src/multiple_abb_irb120_testing/
+!src/multiple_abb_irb120_testing/src
+!src/multiple_abb_irb120_testing/CMakeLists.txt
+!src/multiple_abb_irb120_testing/package.xml
+!src/multiple_abb_irb120_testing/launch
+src/multiple_abb_irb120_testing/launch/temp/
 
 CMakeCache.txt
 cmake_install.cmake
