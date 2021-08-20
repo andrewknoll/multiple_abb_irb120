@@ -7,11 +7,10 @@
 #include "ros/ros.h"
 #include "ros/package.h"
 #include "utils.hpp"
+#include <chrono> 
 
 const std::string MODEL_PLUGIN_NAME = "gazebo_plugin";
 const std::string PACKAGE_NAME = "multiple_abb_irb120";
-
-const double SPHERE_RADIUS = 0.025;
 
 double calculateInitialComponent(int index, double offset, double size, int resolution) {
     return offset + (double)(index - (double)(resolution - 1) / 2) * (size / (double)resolution);
@@ -60,6 +59,7 @@ class Factory : public WorldPlugin
   int vertical_res = 10, horizontal_res = 10;
   float offset_x = 0.0, offset_y = 0.0, offset_z = 1.0;
   float mass = 0.1, stiffness = 20.0, damping = 2.0;
+  float radius = 0.025;
 
 
   public: void Load(physics::WorldPtr _parent, sdf::ElementPtr _sdf)
@@ -73,6 +73,7 @@ class Factory : public WorldPlugin
     if(parameters.count("offset_x") != 0) offset_x = parameters["offset_x"];
     if(parameters.count("offset_y") != 0) offset_y = parameters["offset_y"];
     if(parameters.count("offset_z") != 0) offset_z = parameters["offset_z"];
+    if(parameters.count("radius") != 0) radius = parameters["radius"];
     if(parameters.count("mass") != 0) mass = parameters["mass"];
     if(parameters.count("stiffness") != 0) stiffness = parameters["stiffness"];
     if(parameters.count("damping") != 0) damping = parameters["damping"];
@@ -82,6 +83,7 @@ class Factory : public WorldPlugin
     ros_nh.setParam("/grid/height", height);
     ros_nh.setParam("/grid/resolution", std::vector<int>({vertical_res, horizontal_res}));
     ros_nh.setParam("/grid/offset", std::vector<double>({offset_x, offset_y, offset_z}));
+    ros_nh.setParam("/grid/sphere_radius", radius);
     ros_nh.setParam("/grid/mass", mass);
     ros_nh.setParam("/grid/stiffness", stiffness);
     ros_nh.setParam("/grid/damping", damping);
@@ -107,16 +109,20 @@ class Factory : public WorldPlugin
     int resolution[3] = {horizontal_res, vertical_res, 1};
     int indices[3] = {0, 0, 0};
 
+    std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
+    std::chrono::duration<double> elapsed;
+
     //Spawn all links with their respective collision spheres
     for(int i = 0; i < vertical_res; i++){
       indices[1] = i;
       for(int j = 0; j < horizontal_res; j++){
         indices[0] = j;
         printf("Creating link...\n");
+        start = std::chrono::high_resolution_clock::now();
         suffix = "_" + std::to_string(i * horizontal_res + j);
 
         //Create a new link
-        gazebo::msgs::AddSphereLink(model, mass, SPHERE_RADIUS);
+        gazebo::msgs::AddSphereLink(model, mass, radius);
         gazebo::msgs::Link* link = model.mutable_link(model.link_size()-1);
         //link->set_kinematic(true);
 
@@ -124,18 +130,21 @@ class Factory : public WorldPlugin
 
         link->set_name("link" + suffix);
         link->set_allocated_pose(pos);
-
+        end = std::chrono::high_resolution_clock::now();
+        elapsed += end - start;
         gazebo::msgs::Visual* visual = link->mutable_visual(link->visual_size()-1);
         gazebo::msgs::Material* material = calculateMaterial(indices, resolution);
         visual->set_allocated_material(material);
       }
     }
-
+    start = std::chrono::high_resolution_clock::now();
     modelSDF->Root()->InsertElement(gazebo::msgs::ModelToSDF(model));
 
     _parent->InsertModelSDF(*modelSDF);
+    end = std::chrono::high_resolution_clock::now();
+    elapsed += end - start;
 
-    printf("Started World Grid Plugin\n");
+    printf("Started World Grid Plugin in %f\n", elapsed);
   }
 };
 
