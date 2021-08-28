@@ -261,7 +261,7 @@ void doDemo(GridState& gridState, RobotInterface& robot, int robot_i, int sphere
   // Release sphere by one robot
   //////////////////////////////////
   if(release){
-    std::cout << "Robot " << robot_i + 1 << ": " << "Released sphere" << sphere_i << " " << sphere_j << std::endl;
+    std::cout << "Robot " << robot_i + 1 << ": " << "Released sphere " << sphere_i << " " << sphere_j << std::endl;
     grabMsg.grab = false;
     grabPub.publish(grabMsg);
     gridState.setGrabbed(sphere_i, sphere_j, false);
@@ -273,7 +273,7 @@ void doDemo(GridState& gridState, RobotInterface& robot, int robot_i, int sphere
   //////////////////////////////////
 
   if(!release){
-    std::cout << "Robot " << robot_i + 1 << ": " << "Released sphere" << sphere_i << " " << sphere_j << std::endl;
+    std::cout << "Robot " << robot_i + 1 << ": " << "Released sphere " << sphere_i << " " << sphere_j << std::endl;
     grabMsg.grab = false;
     grabPub.publish(grabMsg);
     gridState.setGrabbed(sphere_i, sphere_j, false);
@@ -328,8 +328,6 @@ int main(int argc, char** argv)
   const int sphere_i[2] = {0, 0};
   const int sphere_j[2] = {0, resolution[1] - 1};
 
-std::cout << "sadifjasorginawrphaperohampteperhomaperkgapetohma" << std::endl;
-std::this_thread::sleep_for(std::chrono::seconds(20));
   GridState gridState(size, resolution, offset, sphere_radius, planning_scene_interfaces, robots, 2);
 
   ros::Subscriber sub = n.subscribe("/gazebo/link_states", 1000, &GridState::updateCallback, &gridState);

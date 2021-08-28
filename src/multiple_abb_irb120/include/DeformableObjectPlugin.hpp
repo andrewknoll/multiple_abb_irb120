@@ -18,7 +18,7 @@ namespace gazebo
       physics::LinkPtr link;
       geometry_msgs::Pose pose_cache;
       const double RADIUS;
-      const double EPSILON = 0.075;
+      const double EPSILON = 0.05;
       std::string link_name, robot_name;
       //ros::Subscriber sub;
       physics::WorldPtr world;
