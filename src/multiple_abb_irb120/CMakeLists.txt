@@ -61,7 +61,6 @@ find_package(gazebo REQUIRED)
 add_message_files(
   FILES
   GrabPetition.msg
-  GrabPosition.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -147,8 +146,9 @@ target_link_libraries(grid PUBLIC grid_vertex ${catkin_LIBRARIES} ${GAZEBO_LIBRA
 add_library(msd SHARED src/MassSpringDamping.cpp include/MassSpringDamping.hpp)
 target_link_libraries(msd PUBLIC utils grid grid_vertex ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
-add_library(deformable_object SHARED src/DeformableObjectPlugin.cpp include/DeformableObjectPlugin.hpp)
-target_link_libraries(deformable_object PUBLIC utils msd grid ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+add_library(deformable_object_plugin SHARED src/DeformableObjectPlugin.cpp include/DeformableObjectPlugin.hpp)
+target_link_libraries(deformable_object_plugin PUBLIC utils msd grid ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+add_dependencies(deformable_object_plugin ${catkin_EXPORTED_TARGETS})
 
 add_library(world_plugin SHARED src/WorldPlugin.cpp)
 target_link_libraries(world_plugin PUBLIC utils ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
@@ -161,7 +161,7 @@ target_link_libraries(grid_state PUBLIC utils ${GAZEBO_LIBRARIES} ${catkin_LIBRA
 
 add_executable(grid_demo src/grid_demo.cpp)
 target_link_libraries(grid_demo PUBLIC ${GAZEBO_LIBRARIES} PUBLIC ${catkin_LIBRARIES} PUBLIC robot_interface PUBLIC grid_state PUBLIC utils)
-
+add_dependencies(grid_demo ${catkin_EXPORTED_TARGETS})
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
