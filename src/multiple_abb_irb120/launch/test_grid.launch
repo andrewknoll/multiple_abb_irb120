@@ -1,0 +1,9 @@
+<launch>
+
+  <!-- startup simulated world -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find multiple_abb_irb120)/worlds/test_grid.world"/>
+    <arg name="gui" value="true"/>
+  </include>
+
+</launch>

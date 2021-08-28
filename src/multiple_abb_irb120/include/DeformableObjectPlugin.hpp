@@ -58,6 +58,9 @@ namespace gazebo
     double mass = 1.0, stiffness = 1.0, damping = 0.1;
     int vertical_res = 10, horizontal_res = 10;
     bool grid_initialized = false;
+    bool gravity = true;
+
+    bool testing = false;
 
     using GridPtr = std::shared_ptr<multiple_abb_irb120::Grid>;
     using MSDPtr = std::shared_ptr<MassSpringDamping>;

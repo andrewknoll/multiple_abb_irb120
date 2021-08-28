@@ -87,6 +87,10 @@ void DeformableObject::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf)
   this->model = _parent;
   this->world = _parent->GetWorld();
 
+  if(_sdf->HasElement("testing")){
+    testing = _sdf->Get<bool>("testing");
+  }
+
   const std::string PACKAGE_PATH = ros::package::getPath("multiple_abb_irb120");
   std::vector<int> resolution;
   std::vector<double> offset;
@@ -106,6 +110,8 @@ void DeformableObject::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf)
   ros_nh.getParam("/grid/mass", mass);
   ros_nh.getParam("/grid/stiffness", stiffness);
   ros_nh.getParam("/grid/damping", damping);
+  ros_nh.getParam("/grid/gravity", gravity);
+  std::cout << "GAOISRHEATDOHAEPOTHPAOEMRTHPAEHPOP: " << gravity << std::endl;
 
   std::cout << "Initializing Mass Spring Damping system..." << std::endl;
   std::cout << "Parameters: " << std::endl;
@@ -120,11 +126,11 @@ void DeformableObject::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf)
   std::cout << "mass: " << mass << std::endl;
   std::cout << "stiffness: " << stiffness << std::endl;
   std::cout << "damping: " << damping << std::endl;
-  msd = std::make_shared<MassSpringDamping>(mass, stiffness, damping, false, this->model->GetWorld()->Gravity());
+  msd = std::make_shared<MassSpringDamping>(mass, stiffness, damping, gravity, this->model->GetWorld()->Gravity());
 
   if(!grid_initialized){
     std::cout << "Initializing grid..." << std::endl;
-    grid = std::make_shared<multiple_abb_irb120::Grid>(model, offset_x, offset_y, offset_z, width, height, horizontal_res, vertical_res);
+    grid = std::make_shared<multiple_abb_irb120::Grid>(model, offset_x, offset_y, offset_z, width, height, horizontal_res, vertical_res, testing);
     std::cout << "Grid: Success!" << std::endl;
   }
 

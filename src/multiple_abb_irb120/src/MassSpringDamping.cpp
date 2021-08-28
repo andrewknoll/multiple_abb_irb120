@@ -89,17 +89,13 @@ void MassSpringDamping::computeRegion(std::shared_ptr<multiple_abb_irb120::Grid>
         //forces = std::accumulate(f.begin(), f.end(), ignition::math::Vector3d::Zero, std::plus<ignition::math::Vector3d>());
         //forces = ignition::math::Vector3d::Zero;
         //Forces manually applied - damping + gravity
-        result = forces + damping_forces - mass * g;
+        result = forces + damping_forces;
         if(i == 1 && j == 1) {
             std::cout << "vel: " << grid->getLink(i, j)->RelativeLinearVel().X() << " " << grid->getLink(i, j)->RelativeLinearVel().Y() << " " << grid->getLink(i, j)->RelativeLinearVel().Z() << std::endl;
         }
-        if(gravity){
-            result += mass * f_g;
+        if(!gravity){
+            result -= mass * g;
         }
-        //Clamp length
-        /*if(result.Length() > MAX_FORCE) {
-            result = result * MAX_FORCE / result.Length();
-        }*/
         grid->get(i, j).setForceCache(result);
         if(i == 1 && j == 1) {
             std::cout << "Forces: " << result.X() << " " << result.Y() << " " << result.Z() << std::endl;

@@ -50,10 +50,10 @@ std::map<std::string, double> utils::readParameters(std::string filename) {
     std::cerr << "Unable to open file[" << filename << "]" << std::endl;
     return parameters;
   }
-  std::bitset<10> flags;
+  std::bitset<11> flags;
 
   std::string key, value;
-  while (!paramFile.eof() && flags.to_ulong() < 0x3FF) {
+  while (!paramFile.eof() && flags.to_ulong() < 0x7FF) {
     std::getline(paramFile, key, ':');
     std::getline(paramFile, value);
     if(key == "width") {
@@ -95,6 +95,10 @@ std::map<std::string, double> utils::readParameters(std::string filename) {
     else if(key == "stiffness"){
       parameters["stiffness"] = stod(value);
       flags[9] = 1;
+    }
+    else if(key == "gravity"){
+      parameters["gravity"] = (value == "1" || value == "true");
+      flags[10] = 1;
     }
   }
   return parameters;

@@ -7,8 +7,8 @@
 
 using namespace multiple_abb_irb120;
 
-Grid::Grid(gazebo::physics::ModelPtr model, double x_origin, double y_origin, double z_origin, double width, double height, int hres, int vres) :
-    model(model), x(x_origin), y(y_origin), z(z_origin), w(width), h(height), hr(hres), vr(vres)
+Grid::Grid(gazebo::physics::ModelPtr model, double x_origin, double y_origin, double z_origin, double width, double height, int hres, int vres, bool testing) :
+    model(model), x(x_origin), y(y_origin), z(z_origin), w(width), h(height), hr(hres), vr(vres), testing(testing)
 {
     //Initialize rows
     grid = std::vector <std::vector<GridVertex> >(vres);
@@ -20,7 +20,13 @@ Grid::Grid(gazebo::physics::ModelPtr model, double x_origin, double y_origin, do
             grid[i][j].setLink(model->GetLink("link_" + std::to_string(i * hres + j)));
         }
     }
-    //grid[1][1].setGrabbed(true);
+    if(testing){
+        grid[0][0].setGrabbed(true);
+        grid[vr - 1][0].setGrabbed(true);
+        grid[0][hr - 1].setGrabbed(true);
+        grid[vr - 1][hr - 1].setGrabbed(true);
+    }
+    
 }
 
 GridVertex& Grid::get(int i, int j) {

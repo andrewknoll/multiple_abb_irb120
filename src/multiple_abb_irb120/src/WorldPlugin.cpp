@@ -9,7 +9,7 @@
 #include "utils.hpp"
 #include <geometry_msgs/Pose.h>
 
-const std::string MODEL_PLUGIN_NAME = "gazebo_plugin";
+const std::string MODEL_PLUGIN_NAME = "deformable_object_plugin";
 const std::string PACKAGE_NAME = "multiple_abb_irb120";
 
 gazebo::msgs::Pose* calculateInitialPos(int indices[3], double offset[3], double size[3], int resolution[3]){
@@ -94,7 +94,6 @@ gazebo::msgs::Material* calculateMaterial(int indices[3], int resolution[3]){
     delete colors[2];
     delete colors[3];
 
-    std::cout << "color: " << color->r() << " " << color->g() << " " << color->b() << " " << color->a() << std::endl;
     material->set_allocated_ambient(color);
     return material;
 }
@@ -116,12 +115,24 @@ class Factory : public WorldPlugin
   int vertical_res = 10, horizontal_res = 10;
   float offset_x = 0.0, offset_y = 0.0, offset_z = 1.0, sphere_radius = 0.025;
   float mass = 0.1, stiffness = 20.0, damping = 2.0;
+  bool gravity = true;
+  bool testing = false;
 
 
   public: void Load(physics::WorldPtr _parent, sdf::ElementPtr _sdf)
   {
     const std::string PACKAGE_PATH = ros::package::getPath(PACKAGE_NAME);
-    std::map<std::string, double> parameters = utils::readParameters(PACKAGE_PATH + "/config/grid.config");
+    std::string configuration_file = PACKAGE_PATH + "/config/grid.config";
+    
+    if(_sdf->HasElement("testing")){
+      testing = _sdf->Get<bool>("testing");
+    }
+
+    if(testing){
+      configuration_file = PACKAGE_PATH + "/config/test_grid.config";
+    }
+
+    std::map<std::string, double> parameters = utils::readParameters(configuration_file);
     if(parameters.count("width") != 0) width = parameters["width"];
     if(parameters.count("height") != 0) height = parameters["height"];
     if(parameters.count("vertical_res") != 0) vertical_res = (int)parameters["vertical_res"];
@@ -133,6 +144,7 @@ class Factory : public WorldPlugin
     if(parameters.count("mass") != 0) mass = parameters["mass"];
     if(parameters.count("stiffness") != 0) stiffness = parameters["stiffness"];
     if(parameters.count("damping") != 0) damping = parameters["damping"];
+    if(parameters.count("gravity") != 0) gravity = parameters["gravity"];
 
     ros::NodeHandle ros_nh;
     ros_nh.setParam("/grid/width", width);
@@ -143,6 +155,7 @@ class Factory : public WorldPlugin
     ros_nh.setParam("/grid/mass", mass);
     ros_nh.setParam("/grid/stiffness", stiffness);
     ros_nh.setParam("/grid/damping", damping);
+    ros_nh.setParam("/grid/gravity", gravity);
         
     this->world = _parent;
 
@@ -158,7 +171,10 @@ class Factory : public WorldPlugin
     gazebo::msgs::Plugin* plugin = model.add_plugin();
     plugin->set_name(MODEL_PLUGIN_NAME);
     plugin->set_filename("lib" + MODEL_PLUGIN_NAME + ".so");
-    //If it was necessary, a visual plugin may be added here
+    if(testing){
+      plugin->set_innerxml("<testing>true</testing>");
+    }
+    //If it is necessary, a visual plugin may be added here
 
     double offset[3] = {offset_x, offset_y, offset_z};
     double size[3] = {width, height, 1};
@@ -177,7 +193,6 @@ class Factory : public WorldPlugin
       indices[1] = i;
       for(int j = 0; j < horizontal_res; j++){
         indices[0] = j;
-        printf("Creating link...\n");
         suffix = "_" + std::to_string(i * horizontal_res + j);
 
         //Create a new link
