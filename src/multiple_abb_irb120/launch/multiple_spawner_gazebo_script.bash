@@ -1,6 +1,14 @@
 #!/bin/bash
 robots="$1"
 dir="$(cd "$(dirname "$0")" && pwd)"
+reg_ex="^[0-9]+$"
+if [[ $robots =~ $reg_ex ]] ; then
+    echo "Spawning $robots robots..."
+else
+    echo -e "\033[33mWARNING: You have not introduced a valid number. Defaulting to 2...\033[0m"
+    robots=2
+    echo "Usage: $(basename $0) <number of robots>"
+fi
 
 source "$dir/../../../devel/setup.bash"
 temp_dir=$(mktemp -d "multiple_robots_ros_packageXXXX")

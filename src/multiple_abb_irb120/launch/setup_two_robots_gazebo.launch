@@ -11,12 +11,12 @@
   <remap from="/robot2/arm_controller/state" to="/robot2/feedback_states" />
   <remap from="/robot2/arm_controller/command" to="/robot2/joint_path_command"/>
 
-  <include file="$(find multiple_abb_irb120)/launch/spawn_irb_120.launch">
+  <include file="$(find multiple_abb_irb120)/launch/spawn_irb120.launch">
 		<arg name="robot_name" value="robot1"/>
 		<arg name="position_x" value="0"/>
 	</include>
 
-  <include file="$(find multiple_abb_irb120)/launch/spawn_irb_120.launch">
+  <include file="$(find multiple_abb_irb120)/launch/spawn_irb120.launch">
 		<arg name="robot_name" value="robot2"/>
 		<arg name="position_x" value="1"/>
 	</include>
