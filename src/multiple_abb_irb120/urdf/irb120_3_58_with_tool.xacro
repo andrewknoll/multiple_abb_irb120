@@ -12,4 +12,16 @@
     <parent link="world"/>
     <child link="$(arg prefix)base_link"/>
   </joint>
+
+  <!-- Add an imaginary tool for planning with MoveIt -->
+  
+  <link name="$(arg prefix)tool_link">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </link>
+  <joint name="$(arg prefix)tool_joint" type="fixed">
+    <origin xyz="0 0 0.075" rpy="0 0 0"/>
+    <parent link="$(arg prefix)tool0"/>
+    <child link="$(arg prefix)tool_link"/>
+  </joint>
+
 </robot>

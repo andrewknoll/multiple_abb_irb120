@@ -157,7 +157,7 @@ add_executable(demo src/demo.cpp include/RobotInterface.hpp)
 target_link_libraries(demo PUBLIC ${catkin_LIBRARIES} PUBLIC robot_interface)
 
 add_library(grid_state SHARED src/GridState.cpp include/GridState.hpp)
-target_link_libraries(grid_state PUBLIC ${GAZEBO_LIBRARIES} ${catkin_LIBRARIES})
+target_link_libraries(grid_state PUBLIC utils ${GAZEBO_LIBRARIES} ${catkin_LIBRARIES})
 
 add_executable(spheres src/spheres.cpp)
 target_link_libraries(spheres PUBLIC ${GAZEBO_LIBRARIES} PUBLIC ${catkin_LIBRARIES} PUBLIC robot_interface PUBLIC grid_state PUBLIC utils)

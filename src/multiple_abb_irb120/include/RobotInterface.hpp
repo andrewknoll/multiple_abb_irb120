@@ -11,7 +11,7 @@
        #define BT_BUF_SIZE 100
 
 class RobotInterface{
-    ros::NodeHandle* node_handle;
+    std::shared_ptr<ros::NodeHandle> node_handle;
     std::shared_ptr<std::thread> publisherThread;
     const std::string ROBOT_NAMESPACE;
     const std::string PLANNING_GROUP;

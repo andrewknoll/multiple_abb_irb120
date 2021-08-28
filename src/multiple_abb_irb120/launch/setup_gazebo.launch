@@ -17,6 +17,7 @@
     <arg name="world_name" value="$(find multiple_abb_irb120)/worlds/grid.world"/>
     <arg name="gui" value="true"/>
     <arg name="paused" value="true"/>
+    <arg name="verbose" value="true" />
   </include>
 
 </launch>

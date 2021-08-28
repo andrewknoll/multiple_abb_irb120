@@ -10,6 +10,7 @@ protected:
     const ignition::math::Vector3d f_g = {0, 0, -9.81};
     void computeRegion(std::shared_ptr<multiple_abb_irb120::Grid> grid/*, double ts*/, int regionPos, int regionSize);
 public:
+    const float MAX_FORCE = 100;
     MassSpringDamping(double mass, double stiffness, double damping, bool simulateGravity = true, ignition::math::Vector3d gravity = {0, 0, -9.81});
     virtual void computePositions(std::shared_ptr<multiple_abb_irb120::Grid> grid/*, double ts*/);
 };
