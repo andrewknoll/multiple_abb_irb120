@@ -4,11 +4,9 @@
 #include "MassSpringDamping.hpp"
 #include <chrono>
 #include <multiple_abb_irb120/GrabPetition.h>
-#include <geometry_msgs/PoseStamped.h>
-#include <map>
-
-#include <mutex>
-#include <condition_variable>
+#include <geometry_msgs/Pose.h>
+#include <gazebo_msgs/LinkStates.h>
+#include <tuple>
 
 namespace gazebo
 {
@@ -17,19 +15,22 @@ namespace gazebo
   protected:
     class SphereGrasp {
     private:
-      std::mutex mtx;
-      std::condition_variable cv;
-      volatile bool must_update = false;
-      bool up = true;
-      std::shared_ptr<std::thread> updater;
       physics::LinkPtr link;
       geometry_msgs::Pose pose_cache;
-      ros::Subscriber sub;
-      void setGrabbedSpherePosCallback(const geometry_msgs::PoseStamped::ConstPtr& msg);
+      const double RADIUS;
+      const double EPSILON = 0.075;
+      std::string link_name, robot_name;
+      //ros::Subscriber sub;
+      physics::WorldPtr world;
+      bool up = true;
+      std::shared_ptr<std::thread> updater;
+
+      //void setGrabbedSpherePosCallback(const gazebo_msgs::LinkStates::ConstPtr& msg);
       void updatePose();
     public:
-      SphereGrasp(physics::LinkPtr link, ros::Subscriber sub);
-      SphereGrasp(physics::LinkPtr link, std::shared_ptr<ros::NodeHandle> n, std::string topic);
+      //SphereGrasp(physics::LinkPtr link, double radius, ros::Subscriber sub);
+      //SphereGrasp(physics::LinkPtr link, double radius, std::shared_ptr<ros::NodeHandle> n, std::string end_effector_name);
+      SphereGrasp(physics::LinkPtr link, double radius, physics::WorldPtr world, std::string robot_name, std::string end_effector_name);
       void shutdown();
       ~SphereGrasp();
     };
@@ -45,12 +46,15 @@ namespace gazebo
     // Pointer to the model
     physics::ModelPtr model;
 
+    //Pointer to the world
+    physics::WorldPtr world;
+
     // Pointer to the update event connection
     event::ConnectionPtr updateConnection;
 
-    std::map<std::string, std::shared_ptr<SphereGrasp> > subscribers;
+    std::map<std::tuple<int, int>, std::shared_ptr<SphereGrasp> > grasps;
 
-    double offset_x = 0.0, offset_y = 0.0, offset_z = 1.0, width = 5.0, height = 5.0;
+    double offset_x = 0.0, offset_y = 0.0, offset_z = 1.0, width = 5.0, height = 5.0, radius = 0.025;
     double mass = 1.0, stiffness = 1.0, damping = 0.1;
     int vertical_res = 10, horizontal_res = 10;
     bool grid_initialized = false;
@@ -64,6 +68,7 @@ namespace gazebo
     std::chrono::steady_clock::time_point t0, t;
 
     void grabCallback(const multiple_abb_irb120::GrabPetition::ConstPtr& msg);
+    void getRobotNameAndLink(std::string full_name, std::string& robot_name, std::string& link_name, std::string delimiter);
 
   public:
     DeformableObject();

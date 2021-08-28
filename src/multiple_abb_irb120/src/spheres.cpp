@@ -72,9 +72,9 @@
 #include "utils.hpp"
 
 #include <multiple_abb_irb120/GrabPetition.h>
-#include <multiple_abb_irb120/GrabPosition.h>
 
 #include <ros/console.h>
+#include <tf2/LinearMath/Quaternion.h>
 
 bool volatile shutdown_request = false;
 
@@ -111,10 +111,7 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
 
   RobotInterface robots[2] = {RobotInterface("manipulator", "robot1"), RobotInterface("manipulator", "robot2")};
   
-  moveit::planning_interface::PlanningSceneInterface planning_scene_interface("/robot1");
-  for(auto& o : planning_scene_interface.getKnownObjectNames()) {
-    std::cout << "Object: " << o << std::endl;
-  }
+  std::shared_ptr<moveit::planning_interface::PlanningSceneInterface> planning_scene_interface = std::make_shared<moveit::planning_interface::PlanningSceneInterface>("/robot1");
 
   std::shared_ptr <moveit::planning_interface::MoveGroupInterface> move_group;
 
@@ -122,20 +119,28 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
 
   // Start the Grid
   // ^^^^^^^^^^^^^^^^^^^^^^^^^
+  std::vector<double> size(2);
+  ros::param::get("/grid/width", size[0]);
+  ros::param::get("/grid/height", size[1]);
   std::vector<int> resolution;
   ros::param::get("/grid/resolution", resolution);
-  GridState gridState(resolution);
+  std::vector<double> offset;
+  ros::param::get("/grid/offset", offset);
+  float sphere_radius = 0.025;
+  ros::param::get("/grid/sphere_radius", sphere_radius);
+
+  move_group = robots[0].getMoveGroup();
+
+  std::cout << "insert generic comment here" << std::endl;
+  GridState gridState(size, resolution, offset, sphere_radius, planning_scene_interface, move_group->getPlanningFrame());
 
   ros::Subscriber sub = n.subscribe("/gazebo/link_states", 1000, &GridState::updateCallback, &gridState);
   ros::Publisher grabPub = n.advertise<multiple_abb_irb120::GrabPetition>("/grid/grab_petitions", 1000);
   multiple_abb_irb120::GrabPetition grabMsg;
 
-
-  move_group = robots[0].getMoveGroup();
-
   geometry_msgs::Pose target_pose;
 
-  while(ros::ok() && !isNear(move_group->getCurrentPose().pose, gridState.getPose(0, 0), 0.1)){
+  /*while(ros::ok() && !utils::isNear(move_group->getCurrentPose().pose, gridState.getPose(0, 0), 0.04)){
     //std::cout << "Sphere pose: " << gridState.getPose(0, 0).position.x << " " << gridState.getPose(0, 0).position.y << " " << gridState.getPose(0, 0).position.z << std::endl;
     if(target_pose != gridState.getPose(0, 0)){
       target_pose = gridState.getPose(0, 0);
@@ -143,31 +148,64 @@ if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels
       move_group->asyncMove();
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
+  }*/
+
+  while(!gridState.isReady()){
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  }
+
+  auto asdnfoaingoaiernoiaenrgoiang = utils::toIgnitionPose3d(move_group->getCurrentPose().pose);
+  auto asdf = asdnfoaingoaiernoiaenrgoiang.Rot();
+  std::cout << "asdf: " << asdf.Roll() << " " << asdf.Pitch() << " " << asdf.Yaw() << std::endl;
+
+  while(ros::ok() && !utils::isNear(move_group->getCurrentPose().pose, gridState.getPose(0, 0), 0.04)){
+    tf2::Quaternion myQuaternion;
+    myQuaternion.setRPY(0, M_PI, 0);
+    target_pose = gridState.getPose(0, 0);
+    target_pose.orientation.x = myQuaternion.x();
+    target_pose.orientation.y = myQuaternion.y();
+    target_pose.orientation.z = myQuaternion.z();
+    target_pose.orientation.w = myQuaternion.w();
+    move_group->setPoseTarget(target_pose);
+    //move_group->setPositionTarget(target_pose.position.x, target_pose.position.y, target_pose.position.z);
+    //move_group->setOrientationTarget(target_pose.orientation.x, target_pose.orientation.y, target_pose.orientation.z, target_pose.orientation.w);
+    move_group->move();
   }
 
   move_group->stop();
 
-  std_msgs::String topicName;
-  topicName.data = "/robot1/end_effector_pose";
-  grabMsg.topic = topicName;
+  std_msgs::String link_name;
+  link_name.data = "abb_irb120_3_58_robot1::link_6";
+  grabMsg.link_name = link_name;
   grabMsg.i = 0;
   grabMsg.j = 0;
   grabMsg.grab = true;
 
+  gridState.setGrabbed(0, 0, true);
   grabPub.publish(grabMsg);
 
   std::cout << "Tuto bene" << std::endl;
 
-  while(ros::ok()){
+  int positions = 0;
+  while(ros::ok() && positions < 4){
     move_group->setRandomTarget();
     move_group->move();
+    positions++;
   }
 
-  for(auto& robot : robots){
+  /*for(auto& robot : robots){
     std::cout << "aoignaoedrnaoehnpsanhpahgahagfadastananf" << std::endl;
     robot.shutdown();
+  }*/
+
+  grabMsg.grab = false;
+  grabPub.publish(grabMsg);
+
+  if(ros::ok()){
+    ros::shutdown();
   }
 
-  ros::shutdown();
+  std::cout << "Shut down" << std::endl;
+
   return 0;
 }

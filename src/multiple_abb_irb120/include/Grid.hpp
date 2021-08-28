@@ -5,10 +5,6 @@
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
 
-double calculateInitialComponent(int index, double offset, double size, int resolution);
-
-gazebo::msgs::Pose* calculateInitialPos(int indices[3], double offset[3], double size[3], int resolution[3]);
-
 namespace multiple_abb_irb120{
     
     class Grid{

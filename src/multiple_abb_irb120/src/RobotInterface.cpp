@@ -1,4 +1,11 @@
 #include "RobotInterface.hpp"
+#include <pluginlib/class_loader.h>
+#include <ros/ros.h>
+#include <trajectory_msgs/JointTrajectory.h>
+#include <moveit/move_group_interface/move_group_interface.h>
+#include <memory>
+#include <string>
+#include <thread>
 #include <ros/console.h>
 
 #include <execinfo.h>
@@ -14,24 +21,24 @@ RobotInterface::RobotInterface(std::string planning_group, std::string ns) :
 {
     std::cout << "Creating " << ns << std::endl;
     std::string temp = (ns == "/" ? ns : ns + "_") + planning_group;
-    node_handle = new ros::NodeHandle("/" + ns);
+    node_handle = std::make_shared<ros::NodeHandle>("/" + ns);
     moveit::planning_interface::MoveGroupInterface::Options opt(temp, "/" + ns + "/robot_description", *node_handle);
     move_group = std::make_shared <moveit::planning_interface::MoveGroupInterface> (opt);
     //joint_model_group = move_group->getCurrentState()->getJointModelGroup(temp);
-    publisherThread = std::make_shared<std::thread>(&RobotInterface::publishEndEffectorPose, this);
+    //publisherThread = std::make_shared<std::thread>(&RobotInterface::publishEndEffectorPose, this);
 
     ROS_INFO_NAMED("robot_interface", "Started robot in namespace: %s", ns.c_str());
 }
 
 void RobotInterface::shutdown(){
-    up = false;
-    publisherThread->join();
-    delete node_handle;
+    //up = false;
+    //publisherThread->join();
+    //delete node_handle;
 }
 
 RobotInterface::~RobotInterface(){
     ROS_INFO_NAMED("robot_interface", "Shutting down robot in namespace: %s", ROBOT_NAMESPACE.c_str());
-    shutdown();
+    //shutdown();
 }
 
 void RobotInterface::publishEndEffectorPose(){
