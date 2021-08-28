@@ -10,7 +10,7 @@
     args="joint_state_controller"/>
 
     <!-- load the arm controller -->
-    <rosparam command="load" file="$(find multiple_abb_irb120)/config/irb120_3_58_arm_controller.yaml">
+    <rosparam command="load" file="$(find abb_irb120_gazebo)/config/irb120_3_58_arm_controller.yaml">
     </rosparam>
 
     <node name="abb_irb120_controller_spawner" pkg="controller_manager" type="spawner" args="arm_controller"/>
