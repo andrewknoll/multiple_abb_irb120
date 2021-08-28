@@ -1,9 +1,0 @@
-<launch>
-
-  <arg name="moveit_controller_manager" default="moveit_simple_controller_manager/MoveItSimpleControllerManager"/>
-  <param name="moveit_controller_manager" value="$(arg moveit_controller_manager)"/>
-
-  <arg name="robot_name" default="robot1" />
-  <rosparam file="$(find multiple_abb_irb120)/config/controllers.yaml" subst_value="true"/>
-
-</launch>
