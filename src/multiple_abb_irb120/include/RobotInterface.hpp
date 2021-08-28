@@ -8,7 +8,9 @@
 #include <string>
 #include <thread>
 
-       #define BT_BUF_SIZE 100
+#include <geometry_msgs/Point.h>
+
+#define BT_BUF_SIZE 100
 
 class RobotInterface{
     std::shared_ptr<ros::NodeHandle> node_handle;
@@ -16,6 +18,7 @@ class RobotInterface{
     const std::string ROBOT_NAMESPACE;
     const std::string PLANNING_GROUP;
     std::shared_ptr<ros::Publisher> endEffPublish;
+    const geometry_msgs::Point BASE_POSITION;
     bool up = true;
 
     std::shared_ptr <moveit::planning_interface::MoveGroupInterface> move_group;
@@ -29,10 +32,12 @@ class RobotInterface{
 
 
 public:
-    RobotInterface(std::string planning_group, std::string ns = "/");
+    RobotInterface(geometry_msgs::Point position, std::string planning_group, std::string ns = "/");
     ~RobotInterface();
     void executeTrajectory(moveit_msgs::RobotTrajectory t);
     void shutdown();
+
+    geometry_msgs::Point getBasePosition() const;
     
-    std::shared_ptr <moveit::planning_interface::MoveGroupInterface> getMoveGroup();
+    std::shared_ptr <moveit::planning_interface::MoveGroupInterface> getMoveGroup() const;
 };

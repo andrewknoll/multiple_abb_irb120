@@ -111,7 +111,6 @@ void DeformableObject::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf)
   ros_nh.getParam("/grid/stiffness", stiffness);
   ros_nh.getParam("/grid/damping", damping);
   ros_nh.getParam("/grid/gravity", gravity);
-  std::cout << "GAOISRHEATDOHAEPOTHPAOEMRTHPAEHPOP: " << gravity << std::endl;
 
   std::cout << "Initializing Mass Spring Damping system..." << std::endl;
   std::cout << "Parameters: " << std::endl;
@@ -157,7 +156,7 @@ void DeformableObject::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf)
 
   std::cout << "Deformable Object Plugin Initialized." << std::endl;
 }
-
+/*
 void DeformableObject::getRobotNameAndLink(std::string full_name, std::string& robot_name, std::string& link_name, std::string delimiter){
   size_t pos = full_name.find(delimiter);
   if(pos != std::string::npos){
@@ -167,15 +166,12 @@ void DeformableObject::getRobotNameAndLink(std::string full_name, std::string& r
     std::cout << "Link you asked: " << robot_name << " " << link_name << std::endl;
   }
 }
-
+*/
 void DeformableObject::grabCallback(const multiple_abb_irb120::GrabPetition::ConstPtr& msg) {
   this->grid->get(msg->i, msg->j).setGrabbed(msg->grab);
   if(msg->grab){
     std::string robot_name, link_name;
-    std::cout << "Grabbed ma ball" << std::endl;
-    //grasps[msg->topic.data] = std::make_shared<SphereGrasp>(this->grid->getLink(msg->i, msg->j), this->radius, this->rosNode, msg->link_name.data);
-    getRobotNameAndLink(msg->link_name.data, robot_name, link_name, "::");
-    grasps[{msg->i, msg->j}] = std::make_shared<SphereGrasp>(this->grid->getLink(msg->i, msg->j), this->radius, this->world, robot_name, link_name);
+    grasps[{msg->i, msg->j}] = std::make_shared<SphereGrasp>(this->grid->getLink(msg->i, msg->j), this->radius, this->world, msg->robot_name.data, msg->link_name.data);
   }
   else{
     grasps[{msg->i, msg->j}]->shutdown();
@@ -185,7 +181,7 @@ void DeformableObject::grabCallback(const multiple_abb_irb120::GrabPetition::Con
 
 void DeformableObject::OnUpdate() {
   t = std::chrono::steady_clock::now();
-  msd->computePositions(grid/*, std::chrono::duration_cast<std::chrono::microseconds>(t - t0).count() * 1e-06*/);
+  msd->computePositions(grid);
   grid->update();
   t0 = t;
 }

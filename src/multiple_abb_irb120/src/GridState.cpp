@@ -9,31 +9,45 @@
 #include <moveit/planning_scene_interface/planning_scene_interface.h>
 #include <thread>
 #include "utils.hpp"
+#include "RobotInterface.hpp"
 
 #include <ros/console.h>
+
+template <typename T>
+std::vector<const T*> createFromArray(const T* array, size_t size) {
+    std::vector<const T*> vec;
+    for(size_t i = 0; i < size; ++i) {
+        vec.push_back(&array[i]);
+    }
+    std::cout << "tuto bene 2" << std::endl;
+    return vec;
+}
 
 GridState::GridState(std::vector<double> size,
                      std::vector<int> resolution,
                      std::vector<double> offset,
                      float sphere_radius,
-                     std::shared_ptr<moveit::planning_interface::PlanningSceneInterface> psi, 
-                     std::string planning_frame,
+                     std::vector<GridState::PSIPtr> psi, 
+                     RobotInterface robots[],
+                     int num_robots,
                      float sphere_safe_threshold)
 : size{size[0], size[1]},
   vres(resolution[0]),
   hres(resolution[1]),
   sphere_radius(sphere_radius),
   offset{offset[0], offset[1], offset[2]},
-  planning_scene(psi),
-  planning_frame(planning_frame),
+  planning_scenes(psi),
+  num_robots(num_robots),
+  robot_interfaces(createFromArray(robots, num_robots)),
   sphere_safe_threshold(sphere_safe_threshold) {
-    
     this->link_poses = std::vector<std::vector<geometry_msgs::Pose> >(vres);
-    this->collision_objects = std::vector<moveit_msgs::CollisionObject>(vres * hres);
+    this->collision_objects = std::vector<std::vector<moveit_msgs::CollisionObject> >(num_robots);
     int indices[3] = {0, 0, 0};
     int resolution_array[3] = {hres, vres, 1};
     grabbed = std::vector<std::vector<GrabbedState> > (vres);
     std::cout << "Starting GridState" << std::endl;
+    
+        
     for(int i = 0; i < vres; i++){
         grabbed[i] = std::vector<GrabbedState>(hres);
         indices[1] = i;
@@ -41,26 +55,36 @@ GridState::GridState(std::vector<double> size,
         link_poses[i] = std::vector<geometry_msgs::Pose>(hres);
         for(int j = 0; j < hres; j++){
             indices[0] = j;
-            moveit_msgs::CollisionObject collision_object;
-            collision_object.header.frame_id = planning_frame;
-            collision_object.id = "sphere_zone_" + std::to_string(i * hres + j);
-            std::cout << "sphere_zone_" << i*hres + j << std::endl;
+            for(int r = 0; r < num_robots; ++r) {
+                moveit_msgs::CollisionObject collision_object;
+                
+                
+                collision_object.id = "sphere_zone_" + std::to_string(i * hres + j);
+                collision_object.header.frame_id = "world";
+                //std::cout << "sphere_zone_" << i*hres + j << std::endl;
 
-            shape_msgs::SolidPrimitive primitive;
-            primitive.type = primitive.SPHERE;
-            primitive.dimensions.resize(1);
-            primitive.dimensions[0] = sphere_radius + sphere_safe_threshold;
+                shape_msgs::SolidPrimitive primitive;
+                primitive.type = primitive.SPHERE;
+                primitive.dimensions.resize(1);
+                primitive.dimensions[0] = sphere_radius + sphere_safe_threshold;
 
-            collision_object.primitives.push_back(primitive);
-            collision_object.primitive_poses.push_back(utils::calculateInitialPos(indices, this->offset, this->size, resolution_array));
-            collision_object.operation = collision_object.ADD;
+                collision_object.primitives.push_back(primitive);
+                geometry_msgs::Pose pose = utils::calculateInitialPos(indices, this->offset, this->size, resolution_array);
+                geometry_msgs::Point base_position = robot_interfaces[r]->getBasePosition();
+                pose.position.x -= base_position.x;
+                pose.position.y -= base_position.y;
+                pose.position.z -= base_position.z;
+                collision_object.primitive_poses.push_back(pose);
+                collision_object.operation = collision_object.ADD;
 
-            collision_objects.push_back(collision_object);
+                collision_objects[r].push_back(collision_object);
+                
+            }
             grabbed[i][j] = NOT_GRABBED;
-            std::cout << "Size: " << collision_object.primitives.size() << std::endl;
         }
     }
-    planning_scene->applyCollisionObjects(collision_objects);
+    applyCollisionObjects();
+    
     moveit_object_updater = std::make_shared<std::thread>(&GridState::updateMoveItObjects, this);
 }
 
@@ -90,36 +114,46 @@ void GridState::updateMoveItObjects(){
         cv.wait(lck, [this]{return must_update;});
         while(must_update && ready){
             must_update = false;
-            collision_objects.clear();
+            for(int r = 0; r < num_robots; ++r) {
+                collision_objects[r].clear();
+            }
             for(int i = 0; i < vres; i++){
                 for(int j = 0; j < hres; j++){
                     if(grabbed[i][j] == GRABBED) continue;
-                    moveit_msgs::CollisionObject collision_object;
-                    collision_object.header.frame_id = planning_frame;
-                    collision_object.id = "sphere_zone_" + std::to_string(i * hres + j);
-                    collision_object.primitive_poses.push_back(this->link_poses[i][j]);
+                    for(int r = 0; r < num_robots; ++r) {
+                        moveit_msgs::CollisionObject collision_object;
+                        collision_object.id = "sphere_zone_" + std::to_string(i * hres + j);
+                        collision_object.header.frame_id = "world";
+                        geometry_msgs::Pose pose = link_poses[i][j];
+                        geometry_msgs::Point base_position = robot_interfaces[r]->getBasePosition();
+                        pose.position.x -= base_position.x;
+                        pose.position.y -= base_position.y;
+                        pose.position.z -= base_position.z;
 
-                    if(grabbed[i][j] == HAS_TO_BE_GRABBED){
-                        collision_object.operation = collision_object.REMOVE;
-                        grabbed[i][j] = GRABBED;
-                    }
-                    else if(grabbed[i][j] == HAS_TO_BE_RELEASED){
-                        shape_msgs::SolidPrimitive primitive;
-                        primitive.type = primitive.SPHERE;
-                        primitive.dimensions.resize(1);
-                        primitive.dimensions[0] = sphere_radius + sphere_safe_threshold;
+                        collision_object.primitive_poses.push_back(pose);
 
-                        collision_object.primitives.push_back(primitive);
-                        collision_object.operation = collision_object.ADD;
-                        grabbed[i][j] = NOT_GRABBED;
+                        if(grabbed[i][j] == HAS_TO_BE_GRABBED){
+                            collision_object.operation = collision_object.REMOVE;
+                            grabbed[i][j] = GRABBED;
+                        }
+                        else if(grabbed[i][j] == HAS_TO_BE_RELEASED){
+                            shape_msgs::SolidPrimitive primitive;
+                            primitive.type = primitive.SPHERE;
+                            primitive.dimensions.resize(1);
+                            primitive.dimensions[0] = sphere_radius + sphere_safe_threshold;
+
+                            collision_object.primitives.push_back(primitive);
+                            collision_object.operation = collision_object.ADD;
+                            grabbed[i][j] = NOT_GRABBED;
+                        }
+                        else {
+                            collision_object.operation = collision_object.MOVE;
+                        }
+                        collision_objects[r].push_back(collision_object);
                     }
-                    else {
-                        collision_object.operation = collision_object.MOVE;
-                    }
-                    collision_objects.push_back(collision_object);
                 }
             }
-            planning_scene->applyCollisionObjects(collision_objects);
+            applyCollisionObjects();
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
@@ -157,5 +191,11 @@ void GridState::setGrabbed(int i, int j, bool grab){
         grabbed[i][j] = HAS_TO_BE_RELEASED;
         must_update = true;
         cv.notify_all();
+    }
+}
+
+void GridState::applyCollisionObjects(){
+    for(int i = 0; i < planning_scenes.size(); i++){
+        planning_scenes[i]->applyCollisionObjects(collision_objects[i]);
     }
 }

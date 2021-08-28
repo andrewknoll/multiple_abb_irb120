@@ -81,7 +81,14 @@ int main(int argc, char **argv)
   ros::AsyncSpinner spinner(1);
   spinner.start();
 
-  std::vector<RobotInterface> robots = {RobotInterface("manipulator", "robot1"), RobotInterface("manipulator", "robot2")};
+  geometry_msgs::Point robot_bases[2];
+  for(int i = 0; i < 2; i++){
+    robot_bases[i].x = i;
+    robot_bases[i].y = 0;
+    robot_bases[i].z = 0;
+  }
+
+  std::vector<RobotInterface> robots = {RobotInterface(robot_bases[0], "manipulator", "robot1"), RobotInterface(robot_bases[1], "manipulator", "robot2")};
 
   moveit_msgs::RobotTrajectory trajectory;
   const double jump_threshold = 0.0;

@@ -1,0 +1,57 @@
+<sdf version='1.6'>
+  <world name='default'>
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+    
+    <include>
+      <uri>model://sun</uri>
+    </include>
+
+    <model name='table_marble'>
+      <pose frame=''>0.509210 0.867373 0.306610 0 -0 0</pose>
+      <link name='link'>
+        <gravity>0</gravity>
+        <visual name='visual'>
+          <geometry>
+            <mesh>
+              <uri>model://table_marble/meshes/table_lightmap.dae</uri>
+              <scale>0.2 0.16 0.12</scale>
+            </mesh>
+          </geometry>
+
+          <material>
+            <script>
+              <uri>model://table_marble/materials/scripts</uri>
+              <uri>model://table_marble/materials/textures</uri>
+              <name>Table/Marble_Lightmap</name>
+            </script>
+            <shader type='vertex'>
+              <normal_map>__default__</normal_map>
+            </shader>
+            <emissive>0 0 0 1</emissive>
+          </material>
+
+          <pose frame=''>0 0 0 0 -0 0</pose>
+        </visual>
+
+        <collision name='collision'>
+          <laser_retro>0</laser_retro>
+          <max_contacts>10</max_contacts>
+          <pose frame=''>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://table_marble/meshes/table_lightmap.dae</uri>
+              <scale>0.2 0.16 0.12</scale>
+            </mesh>
+          </geometry>
+        </collision>
+
+      </link>
+      <static>1</static>
+    </model>
+
+    <plugin name='world_plugin' filename='libworld_plugin.so'/>
+    
+  </world>
+</sdf>

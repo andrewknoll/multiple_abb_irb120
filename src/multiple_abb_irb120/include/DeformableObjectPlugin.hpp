@@ -71,7 +71,7 @@ namespace gazebo
     std::chrono::steady_clock::time_point t0, t;
 
     void grabCallback(const multiple_abb_irb120::GrabPetition::ConstPtr& msg);
-    void getRobotNameAndLink(std::string full_name, std::string& robot_name, std::string& link_name, std::string delimiter);
+    //void getRobotNameAndLink(std::string full_name, std::string& robot_name, std::string& link_name, std::string delimiter);
 
   public:
     DeformableObject();

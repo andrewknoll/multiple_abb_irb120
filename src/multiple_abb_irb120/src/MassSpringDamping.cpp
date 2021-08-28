@@ -66,7 +66,7 @@ void MassSpringDamping::computeRegion(std::shared_ptr<multiple_abb_irb120::Grid>
                 n = lt.Length();
                 f.push_back(-stiffness * (n - n0) * (lt / n));
                 d.push_back(-damping * (grid->getLink(i, j)->WorldLinearVel() - grid->getLink(i + neighbour_i, j + neighbour_j)->WorldLinearVel()));
-                if(i == 1 && j == 1) {
+                /*if(i == 1 && j == 1) {
                     std::cout << "=================================" << std::endl;
                     std::cout << "neigh: " << neighbour_i << " " << neighbour_j << std::endl;
                     std::cout << "n: " << n << std::endl;
@@ -81,7 +81,7 @@ void MassSpringDamping::computeRegion(std::shared_ptr<multiple_abb_irb120::Grid>
                     std::cout << "vel: " << grid->getLink(i + neighbour_i, j + neighbour_j)->WorldLinearVel() << std::endl;
                     std::cout << "stiffness: " << f.back().X() << " " << f.back().Y() << " " << f.back().Z() << std::endl;
                     std::cout << "damping: " << d.back().X() << " " << d.back().Y() << " " << d.back().Z() << std::endl;
-                }
+                }*/
             }
         }
         forces = std::accumulate(f.begin(), f.end(), ignition::math::Vector3d::Zero);
@@ -90,17 +90,17 @@ void MassSpringDamping::computeRegion(std::shared_ptr<multiple_abb_irb120::Grid>
         //forces = ignition::math::Vector3d::Zero;
         //Forces manually applied - damping + gravity
         result = forces + damping_forces;
-        if(i == 1 && j == 1) {
+        /*if(i == 1 && j == 1) {
             std::cout << "vel: " << grid->getLink(i, j)->RelativeLinearVel().X() << " " << grid->getLink(i, j)->RelativeLinearVel().Y() << " " << grid->getLink(i, j)->RelativeLinearVel().Z() << std::endl;
-        }
+        }*/
         if(!gravity){
             result -= mass * g;
         }
         grid->get(i, j).setForceCache(result);
-        if(i == 1 && j == 1) {
+        /*if(i == 1 && j == 1) {
             std::cout << "Forces: " << result.X() << " " << result.Y() << " " << result.Z() << std::endl;
             //std::cout << "Applied: " << grid->getLink(i, j)->RelativeForce().X() << " " << grid->getLink(i, j)->RelativeForce().Y() << " " << grid->getLink(i, j)->RelativeForce().Z() << std::endl;
-        }
+        }*/
         f.clear();
         d.clear();
         regionPos++;

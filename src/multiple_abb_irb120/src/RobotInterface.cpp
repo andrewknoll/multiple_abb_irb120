@@ -7,6 +7,7 @@
 #include <string>
 #include <thread>
 #include <ros/console.h>
+#include <geometry_msgs/Point.h>
 
 #include <execinfo.h>
        #include <stdio.h>
@@ -15,7 +16,8 @@
 
 
 
-RobotInterface::RobotInterface(std::string planning_group, std::string ns) :
+RobotInterface::RobotInterface(geometry_msgs::Point position, std::string planning_group, std::string ns) :
+    BASE_POSITION(position),
     ROBOT_NAMESPACE(ns),
     PLANNING_GROUP(planning_group) 
 {
@@ -74,6 +76,10 @@ void RobotInterface::executeTrajectory(moveit_msgs::RobotTrajectory t) {
     move_group->execute(my_plan);
 }
 
-std::shared_ptr <moveit::planning_interface::MoveGroupInterface>  RobotInterface::getMoveGroup(){
+std::shared_ptr <moveit::planning_interface::MoveGroupInterface>  RobotInterface::getMoveGroup() const {
     return move_group;
+}
+
+geometry_msgs::Point RobotInterface::getBasePosition() const {
+    return BASE_POSITION;
 }

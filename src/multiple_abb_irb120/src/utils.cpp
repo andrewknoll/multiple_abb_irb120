@@ -5,7 +5,7 @@
 
 
 double utils::calculateInitialComponent(int index, double offset, double size, int resolution) {
-    return offset + (double)(index - (double)(resolution - 1) / 2) * (size / (double)resolution);
+    return offset + (resolution > 1 ? (double)(index - (double)(resolution - 1) / 2.0) * (size / (double)(resolution - 1)) : 0);
 }
 
 geometry_msgs::Pose utils::calculateInitialPos(int indices[3], double offset[3], double size[3], int resolution[3]){
