@@ -21,6 +21,9 @@
 		<arg name="position_x" value="1"/>
 	</include>
 
-  <include file="$(find multiple_abb_irb120)/launch/setup_gazebo.launch"/>
+  <!-- startup simulated world -->
+  <include if="$(arg must_start_world)" file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="gui" value="true"/>
+  </include>
 
 </launch>
