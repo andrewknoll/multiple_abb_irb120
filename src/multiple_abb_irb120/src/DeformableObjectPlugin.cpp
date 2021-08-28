@@ -1,6 +1,6 @@
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
-#include "GazeboPlugin.hpp"
+#include "DeformableObjectPlugin.hpp"
 #include "Grid.hpp"
 #include <iostream>
 #include <fstream>

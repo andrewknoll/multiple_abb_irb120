@@ -147,20 +147,20 @@ target_link_libraries(grid PUBLIC grid_vertex ${catkin_LIBRARIES} ${GAZEBO_LIBRA
 add_library(msd SHARED src/MassSpringDamping.cpp include/MassSpringDamping.hpp)
 target_link_libraries(msd PUBLIC utils grid grid_vertex ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
-add_library(gazebo_plugin SHARED src/GazeboPlugin.cpp include/GazeboPlugin.hpp)
-target_link_libraries(gazebo_plugin PUBLIC utils msd grid ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+add_library(deformable_object SHARED src/DeformableObjectPlugin.cpp include/DeformableObjectPlugin.hpp)
+target_link_libraries(deformable_object PUBLIC utils msd grid ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
 add_library(world_plugin SHARED src/WorldPlugin.cpp)
 target_link_libraries(world_plugin PUBLIC utils ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
-add_executable(demo src/demo.cpp include/RobotInterface.hpp)
-target_link_libraries(demo PUBLIC ${catkin_LIBRARIES} PUBLIC robot_interface)
+add_executable(robots_moving_demo src/robots_moving_demo.cpp include/RobotInterface.hpp)
+target_link_libraries(robots_moving_demo PUBLIC ${catkin_LIBRARIES} PUBLIC robot_interface)
 
 add_library(grid_state SHARED src/GridState.cpp include/GridState.hpp)
 target_link_libraries(grid_state PUBLIC utils ${GAZEBO_LIBRARIES} ${catkin_LIBRARIES})
 
-add_executable(spheres src/spheres.cpp)
-target_link_libraries(spheres PUBLIC ${GAZEBO_LIBRARIES} PUBLIC ${catkin_LIBRARIES} PUBLIC robot_interface PUBLIC grid_state PUBLIC utils)
+add_executable(grid_demo src/grid_demo.cpp)
+target_link_libraries(grid_demo PUBLIC ${GAZEBO_LIBRARIES} PUBLIC ${catkin_LIBRARIES} PUBLIC robot_interface PUBLIC grid_state PUBLIC utils)
 
 
 ## Specify additional locations of header files
