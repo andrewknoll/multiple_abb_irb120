@@ -167,6 +167,9 @@ add_executable(grid_wave_demo src/grid_wave_demo.cpp)
 target_link_libraries(grid_wave_demo PUBLIC ${GAZEBO_LIBRARIES} PUBLIC ${catkin_LIBRARIES} PUBLIC robot_interface PUBLIC grid_state PUBLIC utils)
 add_dependencies(grid_wave_demo ${catkin_EXPORTED_TARGETS})
 
+add_executable(robots_waving_demo src/robots_waving_demo.cpp)
+target_link_libraries(robots_waving_demo PUBLIC PUBLIC ${catkin_LIBRARIES} PUBLIC robot_interface)
+
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 #include_directories(
