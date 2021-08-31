@@ -23,6 +23,9 @@ bool utils::isNear(const geometry_msgs::Pose &pose1, const geometry_msgs::Pose &
   double x = pose1.position.x - pose2.position.x;
   double y = pose1.position.y - pose2.position.y;
   double z = pose1.position.z - pose2.position.z;
+  std::cout << "Components " << pose1.position.x << " " << pose1.position.y << " " << pose1.position.z << std::endl;
+  std::cout << "Components2 " << pose2.position.x << " " << pose2.position.y << " " << pose2.position.z << std::endl;
+  std::cout << "Distance " << (sqrt(x*x + y*y + z*z)) << std::endl;
   return (sqrt(x*x + y*y + z*z) < distance);
 }
 
