@@ -1,10 +1,10 @@
 <?xml version="1.0" ?>
 
-<robot name="abb_irb120_3_58" xmlns:xacro="http://ros.org/wiki/xacro">
+<robot name="abb_irb120_3_58_$(arg robotns)" xmlns:xacro="http://ros.org/wiki/xacro">
   <xacro:arg name="prefix" default="" />
-  <xacro:arg name="robotns" default="" />
+  <xacro:arg name="robotns" default="robot1" />
   <xacro:include filename="$(find multiple_abb_irb120)/urdf/irb120_3_58_macro.xacro"/>	
-  <xacro:abb_irb120_3_58_g prefix="$(arg prefix)" robotns="$(arg robotns)"/>
+  <xacro:abb_irb120_3_58_g prefix="$(arg prefix)" robotns="/$(arg robotns)"/>
 
   <!-- Fix robot to Gazebo world -->
   <link name="world"/>
@@ -15,13 +15,13 @@
 
   <!-- Add an imaginary tool for planning with MoveIt -->
   
-  <link name="$(arg prefix)tool_link">
+  <link name="tool_link">
     <origin xyz="0 0 0" rpy="0 0 0"/>
   </link>
   <joint name="$(arg prefix)tool_joint" type="fixed">
     <origin xyz="0 0 0.075" rpy="0 0 0"/>
     <parent link="$(arg prefix)tool0"/>
-    <child link="$(arg prefix)tool_link"/>
+    <child link="tool_link"/>
   </joint>
 
 </robot>

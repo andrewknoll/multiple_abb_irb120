@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 
-<robot name="abb_irb120_3_58" xmlns:xacro="http://ros.org/wiki/xacro">
+<robot name="abb_irb120_3_58_$(arg robotns)" xmlns:xacro="http://ros.org/wiki/xacro">
 
-  <xacro:arg name="prefix" default="robot1_" />
+  <xacro:arg name="prefix" default="" />
   <xacro:arg name="robotns" default="robot1" />
 
   <xacro:include filename="$(find multiple_abb_irb120)/config/abb_irb120_3_58_macro.srdf.xacro"/>	
