@@ -1,0 +1,18 @@
+<!--http://gazebosim.org/tutorials?tut=plugins_world-->
+<?xml version="1.0"?>
+<sdf version="1.4">
+  <world name="default">
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+
+    <include>
+      <uri>model://sun</uri>
+    </include>
+
+    <plugin filename="libworld_plugin.so" name="world_plugin">
+      <small>true</small>
+    </plugin>
+
+  </world>
+</sdf>

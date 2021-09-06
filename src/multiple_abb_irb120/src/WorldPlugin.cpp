@@ -116,14 +116,24 @@ class Factory : public WorldPlugin
   float offset_x = 0.0, offset_y = 0.0, offset_z = 1.0, sphere_radius = 0.025;
   float mass = 0.1, stiffness = 20.0, damping = 2.0;
   bool gravity = true;
+  bool small = false;
   bool testing = false;
 
 
   public: void Load(physics::WorldPtr _parent, sdf::ElementPtr _sdf)
   {
     const std::string PACKAGE_PATH = ros::package::getPath(PACKAGE_NAME);
-    std::string configuration_file = PACKAGE_PATH + "/config/small_grid.config";
+    std::string configuration_file = PACKAGE_PATH + "/config/grid.config";
     
+
+    if(_sdf->HasElement("small")){
+      small = _sdf->Get<bool>("small");
+    }
+
+    if(small){
+      configuration_file = PACKAGE_PATH + "/config/small_grid.config";
+    }
+
     if(_sdf->HasElement("testing")){
       testing = _sdf->Get<bool>("testing");
     }
