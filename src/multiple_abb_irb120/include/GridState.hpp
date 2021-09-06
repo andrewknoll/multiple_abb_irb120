@@ -25,7 +25,7 @@ private:
 
     const std::string LINK_PREFIX = "grid::link_";
     std::vector<std::vector<geometry_msgs::Pose> > link_poses;
-    std::vector<std::vector<GrabbedState> > grabbed;
+    std::vector<GrabbedState> grabbed;
     std::vector<PSIPtr> planning_scenes;
     std::vector<std::vector<moveit_msgs::CollisionObject> > collision_objects;
     std::vector<std::string> planning_frames;
@@ -47,5 +47,5 @@ public:
     const geometry_msgs::Pose& getPose(int i, int j) const;
     bool isReady() const;
     void shutdown();
-    void setGrabbed(int i, int j, bool grab);
+    void setGrabbed(int robot_i, bool grab);
 };

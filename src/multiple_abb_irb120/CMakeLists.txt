@@ -170,6 +170,11 @@ add_dependencies(grid_wave_demo ${catkin_EXPORTED_TARGETS})
 add_executable(robots_waving_demo src/robots_waving_demo.cpp)
 target_link_libraries(robots_waving_demo PUBLIC PUBLIC ${catkin_LIBRARIES} PUBLIC robot_interface)
 
+add_executable(small_cloth_manipulation src/small_cloth_manipulation.cpp)
+target_link_libraries(small_cloth_manipulation PUBLIC ${GAZEBO_LIBRARIES} PUBLIC ${catkin_LIBRARIES} PUBLIC robot_interface PUBLIC grid_state PUBLIC utils)
+add_dependencies(small_cloth_manipulation ${catkin_EXPORTED_TARGETS})
+
+
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 #include_directories(

@@ -173,7 +173,7 @@ void doDemo(GridState& gridState, RobotInterface& robot, int robot_i, int sphere
     }
   }
   grabPub.publish(grabMsg);
-  gridState.setGrabbed(sphere_i, sphere_j, true);
+  gridState.setGrabbed(robot_i, true);
 
   std::cout << "Robot " << robot_i + 1 << ": " << "Grabbed sphere " << sphere_i << " " << sphere_j << "." << std::endl;
 
@@ -258,7 +258,7 @@ void doDemo(GridState& gridState, RobotInterface& robot, int robot_i, int sphere
   std::cout << "Robot " << robot_i + 1 << ": " << "Released sphere " << sphere_i << " " << sphere_j << std::endl;
   grabMsg.grab = false;
   grabPub.publish(grabMsg);
-  gridState.setGrabbed(sphere_i, sphere_j, false);
+  gridState.setGrabbed(robot_i, false);
 
 }
 

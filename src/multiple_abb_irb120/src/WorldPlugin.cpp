@@ -122,7 +122,7 @@ class Factory : public WorldPlugin
   public: void Load(physics::WorldPtr _parent, sdf::ElementPtr _sdf)
   {
     const std::string PACKAGE_PATH = ros::package::getPath(PACKAGE_NAME);
-    std::string configuration_file = PACKAGE_PATH + "/config/grid.config";
+    std::string configuration_file = PACKAGE_PATH + "/config/small_grid.config";
     
     if(_sdf->HasElement("testing")){
       testing = _sdf->Get<bool>("testing");

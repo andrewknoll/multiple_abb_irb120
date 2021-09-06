@@ -131,8 +131,14 @@ void doDemo(GridState& gridState, RobotInterface& robot, int robot_i, int sphere
   //////////////////////////////////
   if(ros::ok()){
     do {
+      auto A = move_group->getLinkNames();
+      for(auto b : A) {
+        std::cout << "Link" << std::endl;
+        std::cout << b << std::endl;
+      }
       target = getAdjustedSpherePose(gridState, robot.getBasePosition(), facing_down, sphere_i, sphere_j);
-
+      std::cout << "EEF" << robot_i << " " << move_group->getEndEffectorLink() << std::endl;
+      std::cout << robot_i << " " << move_group->getCurrentPose().pose << std::endl;
       move_group->setPoseTarget(target);
       move_group->move();
     } while(ros::ok() && !utils::isNear(move_group->getCurrentPose().pose, getAdjustedSpherePose(gridState, robot.getBasePosition(), facing_down, sphere_i, sphere_j), 0.04));
@@ -171,7 +177,7 @@ void doDemo(GridState& gridState, RobotInterface& robot, int robot_i, int sphere
     }
   }
   grabPub.publish(grabMsg);
-  gridState.setGrabbed(sphere_i, sphere_j, true);
+  gridState.setGrabbed(robot_i, true);
 
   std::cout << "Robot " << robot_i + 1 << ": " << "Grabbed sphere " << sphere_i << " " << sphere_j << "." << std::endl;
   initial = move_group->getCurrentPose().pose;
@@ -264,7 +270,7 @@ void doDemo(GridState& gridState, RobotInterface& robot, int robot_i, int sphere
     std::cout << "Robot " << robot_i + 1 << ": " << "Released sphere " << sphere_i << " " << sphere_j << std::endl;
     grabMsg.grab = false;
     grabPub.publish(grabMsg);
-    gridState.setGrabbed(sphere_i, sphere_j, false);
+    gridState.setGrabbed(robot_i, false);
   }
 
   std::this_thread::sleep_for(std::chrono::seconds(3));
@@ -276,7 +282,7 @@ void doDemo(GridState& gridState, RobotInterface& robot, int robot_i, int sphere
     std::cout << "Robot " << robot_i + 1 << ": " << "Released sphere " << sphere_i << " " << sphere_j << std::endl;
     grabMsg.grab = false;
     grabPub.publish(grabMsg);
-    gridState.setGrabbed(sphere_i, sphere_j, false);
+    gridState.setGrabbed(robot_i, false);
   }
   std::cout << "Robot " << robot_i + 1 << ": " << "Moving to initial pose..." << std::endl;
   move_group->setNamedTarget(ALL_ZERO_POSE_NAME);
@@ -311,6 +317,9 @@ int main(int argc, char** argv)
   planning_scene_interfaces.push_back(std::make_shared<moveit::planning_interface::PlanningSceneInterface>("robot1"));
   planning_scene_interfaces.push_back(std::make_shared<moveit::planning_interface::PlanningSceneInterface>("robot2"));
 
+  std::cout << "NAME1" << robots[0].getMoveGroup()->getRobotModel()->getName() << std::endl;
+  std::cout << "NAME2" << robots[1].getMoveGroup()->getRobotModel()->getName() << std::endl;
+
   ros::Rate loop_rate(10);
 
   // Start the Grid
@@ -336,8 +345,8 @@ int main(int argc, char** argv)
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
 
-  std::thread t1(doDemo, std::ref(gridState), std::ref(robots[1]), 1, sphere_i[1], sphere_j[1], false, false);
-  doDemo(gridState, robots[0], 0, sphere_i[0], sphere_j[0], true, true);
+  std::thread t1(doDemo, std::ref(gridState), std::ref(robots[0]), 0, sphere_i[0], sphere_j[0], false, false);
+  doDemo(gridState, robots[1], 1, sphere_i[1], sphere_j[1], true, true);
 
   t1.join();
 

@@ -44,20 +44,23 @@ GridState::GridState(std::vector<double> size,
     this->collision_objects = std::vector<std::vector<moveit_msgs::CollisionObject> >(num_robots);
     int indices[3] = {0, 0, 0};
     int resolution_array[3] = {hres, vres, 1};
-    grabbed = std::vector<std::vector<GrabbedState> > (vres);
+    grabbed = std::vector<GrabbedState>(num_robots);
     std::cout << "Starting GridState" << std::endl;
-    
-        
+
     for(int i = 0; i < vres; i++){
-        grabbed[i] = std::vector<GrabbedState>(hres);
-        indices[1] = i;
         //Initialize column
         link_poses[i] = std::vector<geometry_msgs::Pose>(hres);
-        for(int j = 0; j < hres; j++){
-            indices[0] = j;
-            for(int r = 0; r < num_robots; ++r) {
+    }
+    
+    for(int r = 0; r < num_robots; ++r) {
+        grabbed[r] = NOT_GRABBED;
+        for(int i = 0; i < vres; i++){
+            indices[1] = i;
+            
+            for(int j = 0; j < hres; j++){
+                indices[0] = j;
+            
                 moveit_msgs::CollisionObject collision_object;
-                
                 
                 collision_object.id = "sphere_zone_" + std::to_string(i * hres + j);
                 collision_object.header.frame_id = "world";
@@ -80,7 +83,7 @@ GridState::GridState(std::vector<double> size,
                 collision_objects[r].push_back(collision_object);
                 
             }
-            grabbed[i][j] = NOT_GRABBED;
+            grabbed[r] = NOT_GRABBED;
         }
     }
     applyCollisionObjects();
@@ -117,10 +120,12 @@ void GridState::updateMoveItObjects(){
             for(int r = 0; r < num_robots; ++r) {
                 collision_objects[r].clear();
             }
-            for(int i = 0; i < vres; i++){
-                for(int j = 0; j < hres; j++){
-                    if(grabbed[i][j] == GRABBED) continue;
-                    for(int r = 0; r < num_robots; ++r) {
+            for(int r = 0; r < num_robots; ++r) {
+                if(grabbed[r] == GRABBED) break;
+                for(int i = 0; i < vres; i++){
+                    for(int j = 0; j < hres; j++){
+                        
+                    
                         moveit_msgs::CollisionObject collision_object;
                         collision_object.id = "sphere_zone_" + std::to_string(i * hres + j);
                         collision_object.header.frame_id = "world";
@@ -132,11 +137,11 @@ void GridState::updateMoveItObjects(){
 
                         collision_object.primitive_poses.push_back(pose);
 
-                        if(grabbed[i][j] == HAS_TO_BE_GRABBED){
+                        if(grabbed[r] == HAS_TO_BE_GRABBED){
                             collision_object.operation = collision_object.REMOVE;
-                            grabbed[i][j] = GRABBED;
+                            grabbed[r] = GRABBED;
                         }
-                        else if(grabbed[i][j] == HAS_TO_BE_RELEASED){
+                        else if(grabbed[r] == HAS_TO_BE_RELEASED){
                             shape_msgs::SolidPrimitive primitive;
                             primitive.type = primitive.SPHERE;
                             primitive.dimensions.resize(1);
@@ -144,7 +149,7 @@ void GridState::updateMoveItObjects(){
 
                             collision_object.primitives.push_back(primitive);
                             collision_object.operation = collision_object.ADD;
-                            grabbed[i][j] = NOT_GRABBED;
+                            grabbed[r] = NOT_GRABBED;
                         }
                         else {
                             collision_object.operation = collision_object.MOVE;
@@ -181,14 +186,14 @@ GridState::~GridState() {
     shutdown();
 }
 
-void GridState::setGrabbed(int i, int j, bool grab){
-    if(grabbed[i][j] != GRABBED && grab){
-        grabbed[i][j] = HAS_TO_BE_GRABBED;
+void GridState::setGrabbed(int robot_i, bool grab){
+    if(grabbed[robot_i] != GRABBED && grab){
+        grabbed[robot_i] = HAS_TO_BE_GRABBED;
         must_update = true;
         cv.notify_all();
     }
-    else if(grabbed[i][j] != NOT_GRABBED && !grab){
-        grabbed[i][j] = HAS_TO_BE_RELEASED;
+    else if(grabbed[robot_i] != NOT_GRABBED && !grab){
+        grabbed[robot_i] = HAS_TO_BE_RELEASED;
         must_update = true;
         cv.notify_all();
     }
