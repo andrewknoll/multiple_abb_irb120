@@ -11,7 +11,7 @@ else
 fi
 
 source "$dir/../../../devel/setup.bash"
-temp_dir=$(mktemp -d "multiple_robots_ros_packageXXXX")
+temp_dir=$(mktemp -d "${TMPDIR:-/tmp/}multiple_robots_ros_package.XXXXXXXXXXXX")
 temp_file=$(mktemp "--tmpdir=$temp_dir" "gazebo_remapper_file_XXXXXX.launch")
 i=0
 
