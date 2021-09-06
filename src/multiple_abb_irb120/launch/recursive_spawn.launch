@@ -4,7 +4,7 @@
 
 	<include file="$(find multiple_abb_irb120)/launch/spawn_irb120.launch" if="$(eval arg('number') >= 1)">
 		<arg name="robot_name" value="robot$(arg number)"/>
-		<arg name="position_x" value="$(eval int(arg('number')) - 1)"/>
+		<arg name="position_y" value="$(eval int(arg('number')) - 1)"/>
 	</include>
 
 	<include file="$(find multiple_abb_irb120)/launch/recursive_spawn.launch" if="$(eval arg('number') >= 1)">
