@@ -76,219 +76,182 @@
 #include <ros/console.h>
 #include <tf2/LinearMath/Quaternion.h>
 
-const double JUMP_THRESHOLD = 0.0;
-const double EEF_STEP = 0.01;
-const std::string ROBOT_PREFIX = "abb_irb120_3_58_robot";
-const std::string LINK_NAME = "link_6";
-const std::string DEMO_POSE_NAME = "demo_pose";
-const std::string ALL_ZERO_POSE_NAME = "all_zero";
 const int NUM_ROBOTS = 2;
-
-//Progress of the demo for synchronization of both robots
-int step[2] = {0, 0};
-std::mutex step_mutex;
-std::condition_variable step_cv;
 
 using MGIPtr = std::shared_ptr <moveit::planning_interface::MoveGroupInterface>;
 
-geometry_msgs::Pose getAdjustedSpherePose(GridState& gridState, geometry_msgs::Point base_position, tf2::Quaternion o, int i, int j){
-  geometry_msgs::Pose target = gridState.getPose(i, j);
+class GridDemo {
+private:
+  const double JUMP_THRESHOLD = 0.0;
+  const double EEF_STEP = 0.01;
+  const std::string ROBOT_PREFIX = "abb_irb120_3_58_robot";
+  const std::string LINK_NAME = "link_6";
+  const std::string DEMO_POSE_NAME = "demo_pose";
+  const std::string ALL_ZERO_POSE_NAME = "all_zero";
+  const int N;
 
-  target.position.x -= base_position.x;
-  target.position.y -= base_position.y;
-  target.position.z -= base_position.z;
+  //Progress of the demo for synchronization of both robots
+  int current_step[2] = {0, 0};
+  std::mutex step_mutex;
+  std::condition_variable step_cv;
 
-  target.orientation.x = o.x();
-  target.orientation.y = o.y();
-  target.orientation.z = o.z();
-  target.orientation.w = o.w();
+public:
+  GridDemo(int n_robots) : N(n_robots) {}
 
-  return target;
-}
-
-
-
-void doDemo(GridState& gridState, RobotInterface& robot, int robot_i, int sphere_i, int sphere_j, bool right, bool release){
-  int p;
-  bool c = false;
-  tf2::Quaternion facing_down;
-  multiple_abb_irb120::GrabPetition grabMsg;
-  std_msgs::String robot_name, link_name;
-  std::vector<geometry_msgs::Pose> waypoints(5);
-  geometry_msgs::Pose initial, target;
-  moveit_msgs::RobotTrajectory trajectory;
-  MGIPtr move_group = robot.getMoveGroup();
-  ros::NodeHandle n;
-  ros::Publisher grabPub = n.advertise<multiple_abb_irb120::GrabPetition>("/grid/grab_petitions", 100);
-
-  facing_down.setRPY(0, M_PI, 0);
-  move_group->setPlanningTime(10.0);
-  
-  std::cout << "Robot " << robot_i + 1 << ": " << "Approaching sphere " << sphere_i << " " << sphere_j << "..." << std::endl;
-
-  //////////////////////////////////
-  // Approach sphere
-  //////////////////////////////////
-  if(ros::ok()){
-    do {
-      auto A = move_group->getLinkNames();
-      for(auto b : A) {
-        std::cout << "Link" << std::endl;
-        std::cout << b << std::endl;
+  bool syncRobots(int robot_i, int step, int tries = 100, int milliseconds = 500){
+    bool c = false;
+    int i = 0;
+    current_step[robot_i] = step;
+    step_cv.notify_all();
+    while(!c && i < tries){
+      c = true;
+      for(int i = 0; i < NUM_ROBOTS && c; i++){
+        c &= current_step[i] == step;
       }
-      target = getAdjustedSpherePose(gridState, robot.getBasePosition(), facing_down, sphere_i, sphere_j);
-      std::cout << "EEF" << robot_i << " " << move_group->getEndEffectorLink() << std::endl;
-      std::cout << robot_i << " " << move_group->getCurrentPose().pose << std::endl;
-      move_group->setPoseTarget(target);
-      move_group->move();
-    } while(ros::ok() && !utils::isNear(move_group->getCurrentPose().pose, getAdjustedSpherePose(gridState, robot.getBasePosition(), facing_down, sphere_i, sphere_j), 0.04));
-  }
-  
-  move_group->stop();
-  std::cout << "Robot " << robot_i + 1 << ": " << "Approached sphere " << sphere_i << " " << sphere_j << "." << std::endl;
-
-  //////////////////////////////////
-  // Grab sphere
-  //////////////////////////////////
-  link_name.data = LINK_NAME;
-  robot_name.data = ROBOT_PREFIX + std::to_string(robot_i + 1);
-  grabMsg.robot_name = robot_name;
-  
-  grabMsg.i = sphere_i;
-  grabMsg.j = sphere_j;
-  grabMsg.link_name = link_name;
-  grabMsg.robot_name = robot_name;
-  grabMsg.grab = true;
-
-  // SYNC
-  step[robot_i] = 1;
-  step_cv.notify_all();
-  while(!c){
-    c = true;
-    for(int i = 0; i < NUM_ROBOTS && c; i++){
-      c &= step[i] == 1;
+      if(!c && ros::ok()){
+        std::unique_lock<std::mutex> lck(step_mutex);
+        step_cv.wait_for(lck, std::chrono::milliseconds(milliseconds));
+      }
+      if(!ros::ok()){
+        return false;
+      }
+      i++;
     }
-    if(!c && ros::ok()){
-      std::unique_lock<std::mutex> lck(step_mutex);
-      step_cv.wait_for(lck, std::chrono::milliseconds(100));
-    }
-    if(!ros::ok()){
-      return;
-    }
-  }
-  grabPub.publish(grabMsg);
-  gridState.setGrabbed(robot_i, true);
-
-  std::cout << "Robot " << robot_i + 1 << ": " << "Grabbed sphere " << sphere_i << " " << sphere_j << "." << std::endl;
-  initial = move_group->getCurrentPose().pose;
-
-  //////////////////////////////////
-  // Move in a square
-  //////////////////////////////////
-  std::cout << "Robot " << robot_i << ": " << "Starting trajectory..." << std::endl;
-  //Get to the initial pose
-  // ^^^^^^^^^^^^^^^^^^^^^^^^^
-  
-
-  //Creating 4 positions in a square
-  // ^^^^^^^^^^^^^^^^^^^^^^^^^
-  for (int i = 0; i < 2; i++) { //Column
-    for (int j = 0; j < 2; j++) {
-      p = (i == 0 ? j : 3 - j);
-      waypoints[p].position.x = initial.position.x + (i == 0 ? -0.1 : 0.1);
-      waypoints[p].position.y = initial.position.y + (j == 1 ? -0.1 : 0.1);
-      waypoints[p].position.z = initial.position.z;
-
-      waypoints[p].orientation = initial.orientation;
-    }
-  }
-  //Assign the final position to the initial
-  // ^^^^^^^^^^^^^^^^^^^^^^^^^
-  waypoints[4] = waypoints[0];
-
-  //Making a square movement
-  // ^^^^^^^^^^^^^^^^^^^^^^^^^
-  double fraction = move_group->computeCartesianPath(waypoints, EEF_STEP, JUMP_THRESHOLD, trajectory);
-
-  moveit::planning_interface::MoveGroupInterface::Plan my_plan;
-
-  my_plan.trajectory_ = trajectory;
-  move_group->execute(my_plan);
-
-  std::cout << "Robot " << robot_i + 1 << ": " << "Finished trajectory." << std::endl;
-
-  // SYNC
-  step[robot_i] = 2;
-  step_cv.notify_all();
-  while(!c){
-    c = true;
-    for(int i = 0; i < NUM_ROBOTS && c; i++){
-      c &= step[i] == 2;
-    }
-    if(!c && ros::ok()){
-      std::unique_lock<std::mutex> lck(step_mutex);
-      step_cv.wait_for(lck, std::chrono::milliseconds(100));
-    }
-    if(!ros::ok()){
-      return;
-    }
-  }
-  std::cout << "Robot " << robot_i + 1 << ": " << "Starting second movement..." << std::endl;
-  //////////////////////////////////
-  // Deform object
-  //////////////////////////////////
-  target = initial;
-  target.position.x += right ? -0.5 : 0.5;
-  target.position.z += 0.25;
-
-  move_group->setPositionTarget(target.position.x, target.position.y, target.position.z);
-  move_group->move();
-  std::cout << "Robot " << robot_i + 1 << ": " << "Finished second movement." << std::endl;
-  // SYNC
-  step[robot_i] = 3;
-  step_cv.notify_all();
-  while(!c){
-    c = true;
-    for(int i = 0; i < NUM_ROBOTS && c; i++){
-      c &= step[i] == 3;
-    }
-    if(!c && ros::ok()){
-      std::unique_lock<std::mutex> lck(step_mutex);
-      step_cv.wait_for(lck, std::chrono::milliseconds(100));
-    }
-    if(!ros::ok()){
-      return;
-    }
+    return i < tries;
   }
 
-  std::this_thread::sleep_for(std::chrono::milliseconds(500));
-  
-  //////////////////////////////////
-  // Release sphere by one robot
-  //////////////////////////////////
-  if(release){
-    std::cout << "Robot " << robot_i + 1 << ": " << "Released sphere " << sphere_i << " " << sphere_j << std::endl;
-    grabMsg.grab = false;
+  void doDemo(GridState& gridState, RobotInterface& robot, int robot_i, int sphere_i, int sphere_j, bool right, bool release){
+    int p;
+    bool c = false;
+    tf2::Quaternion facing_down;
+    multiple_abb_irb120::GrabPetition grabMsg;
+    std_msgs::String robot_name, link_name;
+    std::vector<geometry_msgs::Pose> waypoints(5);
+    geometry_msgs::Pose initial, target;
+    moveit_msgs::RobotTrajectory trajectory;
+    MGIPtr move_group = robot.getMoveGroup();
+    ros::NodeHandle n;
+    ros::Publisher grabPub = n.advertise<multiple_abb_irb120::GrabPetition>("/grid/grab_petitions", 100);
+
+    facing_down.setRPY(0, M_PI, 0);
+    move_group->setPlanningTime(10.0);
+    
+    std::cout << "Robot " << robot_i + 1 << ": " << "Approaching sphere " << sphere_i << " " << sphere_j << "..." << std::endl;
+
+    //////////////////////////////////
+    // Approach sphere
+    //////////////////////////////////
+    if(ros::ok()){
+      do {
+        target = utils::getAdjustedSpherePose(gridState.getPose(sphere_i, sphere_j), robot.getBasePosition(), facing_down);
+        move_group->setPoseTarget(target);
+        move_group->move();
+      } while(ros::ok() && !utils::isNear(move_group->getCurrentPose().pose, utils::getAdjustedSpherePose(gridState.getPose(sphere_i, sphere_j), robot.getBasePosition(), facing_down), 0.04));
+    }
+    
+    move_group->stop();
+    std::cout << "Robot " << robot_i + 1 << ": " << "Approached sphere " << sphere_i << " " << sphere_j << "." << std::endl;
+
+    //////////////////////////////////
+    // Grab sphere
+    //////////////////////////////////
+    link_name.data = LINK_NAME;
+    robot_name.data = ROBOT_PREFIX + std::to_string(robot_i + 1);
+    grabMsg.robot_name = robot_name;
+    
+    grabMsg.i = sphere_i;
+    grabMsg.j = sphere_j;
+    grabMsg.link_name = link_name;
+    grabMsg.robot_name = robot_name;
+    grabMsg.grab = true;
+
+    // SYNC
+    if(!syncRobots(robot_i, 1)) return;
+
     grabPub.publish(grabMsg);
-    gridState.setGrabbed(robot_i, false);
+    gridState.setGrabbed(robot_i, true);
+
+    std::cout << "Robot " << robot_i + 1 << ": " << "Grabbed sphere " << sphere_i << " " << sphere_j << "." << std::endl;
+    initial = move_group->getCurrentPose().pose;
+
+    //////////////////////////////////
+    // Move in a square
+    //////////////////////////////////
+    std::cout << "Robot " << robot_i << ": " << "Starting trajectory..." << std::endl;
+    
+
+    //Creating 4 positions in a square
+    // ^^^^^^^^^^^^^^^^^^^^^^^^^
+    for (int i = 0; i < 2; i++) { //Column
+      for (int j = 0; j < 2; j++) {
+        p = (i == 0 ? j : 3 - j);
+        waypoints[p].position.x = initial.position.x + (i == 0 ? -0.1 : 0.1);
+        waypoints[p].position.y = initial.position.y + (j == 1 ? -0.1 : 0.1);
+        waypoints[p].position.z = initial.position.z;
+
+        waypoints[p].orientation = initial.orientation;
+      }
+    }
+    //Assign the final position to the initial
+    // ^^^^^^^^^^^^^^^^^^^^^^^^^
+    waypoints[4] = waypoints[0];
+
+    //Making a square movement
+    // ^^^^^^^^^^^^^^^^^^^^^^^^^
+    double fraction = move_group->computeCartesianPath(waypoints, EEF_STEP, JUMP_THRESHOLD, trajectory);
+
+    moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+
+    my_plan.trajectory_ = trajectory;
+    move_group->execute(my_plan);
+
+    std::cout << "Robot " << robot_i + 1 << ": " << "Finished trajectory." << std::endl;
+
+    // SYNC
+    if(!syncRobots(robot_i, 2)) return;
+    std::cout << "Robot " << robot_i + 1 << ": " << "Starting second movement..." << std::endl;
+    //////////////////////////////////
+    // Deform object
+    //////////////////////////////////
+    target = initial;
+    target.position.y += right ? 0.4 : -0.4;
+
+    move_group->setPoseTarget(target);
+    move_group->move();
+    std::cout << "Robot " << robot_i + 1 << ": " << "Finished second movement." << std::endl;
+    // SYNC
+    if(!syncRobots(robot_i, 3)) return;
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    
+    //////////////////////////////////
+    // Release sphere by one robot
+    //////////////////////////////////
+    if(release){
+      std::cout << "Robot " << robot_i + 1 << ": " << "Released sphere " << sphere_i << " " << sphere_j << std::endl;
+      grabMsg.grab = false;
+      grabPub.publish(grabMsg);
+      gridState.setGrabbed(robot_i, false);
+    }
+
+    std::this_thread::sleep_for(std::chrono::seconds(3));
+    //////////////////////////////////
+    // Release and finish demo
+    //////////////////////////////////
+
+    if(!release){
+      std::cout << "Robot " << robot_i + 1 << ": " << "Released sphere " << sphere_i << " " << sphere_j << std::endl;
+      grabMsg.grab = false;
+      grabPub.publish(grabMsg);
+      gridState.setGrabbed(robot_i, false);
+    }
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+    std::cout << "Robot " << robot_i + 1 << ": " << "Moving to initial pose..." << std::endl;
+    move_group->setNamedTarget(ALL_ZERO_POSE_NAME);
+    move_group->move();
+    std::cout << "Robot " << robot_i + 1 << ": " << "Finished." << std::endl;
   }
 
-  std::this_thread::sleep_for(std::chrono::seconds(3));
-  //////////////////////////////////
-  // Release and finish demo
-  //////////////////////////////////
-
-  if(!release){
-    std::cout << "Robot " << robot_i + 1 << ": " << "Released sphere " << sphere_i << " " << sphere_j << std::endl;
-    grabMsg.grab = false;
-    grabPub.publish(grabMsg);
-    gridState.setGrabbed(robot_i, false);
-  }
-  std::cout << "Robot " << robot_i + 1 << ": " << "Moving to initial pose..." << std::endl;
-  move_group->setNamedTarget(ALL_ZERO_POSE_NAME);
-  move_group->move();
-  std::cout << "Robot " << robot_i + 1 << ": " << "Finished." << std::endl;
-}
+};
 
 int main(int argc, char** argv)
 {
@@ -306,8 +269,8 @@ int main(int argc, char** argv)
 
   geometry_msgs::Point robot_bases[2];
   for(int i = 0; i < 2; i++){
-    robot_bases[i].x = i;
-    robot_bases[i].y = 0;
+    robot_bases[i].x = 0;
+    robot_bases[i].y = i;
     robot_bases[i].z = 0;
   }
 
@@ -316,9 +279,6 @@ int main(int argc, char** argv)
   std::vector<std::shared_ptr<moveit::planning_interface::PlanningSceneInterface> > planning_scene_interfaces;
   planning_scene_interfaces.push_back(std::make_shared<moveit::planning_interface::PlanningSceneInterface>("robot1"));
   planning_scene_interfaces.push_back(std::make_shared<moveit::planning_interface::PlanningSceneInterface>("robot2"));
-
-  std::cout << "NAME1" << robots[0].getMoveGroup()->getRobotModel()->getName() << std::endl;
-  std::cout << "NAME2" << robots[1].getMoveGroup()->getRobotModel()->getName() << std::endl;
 
   ros::Rate loop_rate(10);
 
@@ -334,8 +294,8 @@ int main(int argc, char** argv)
   float sphere_radius = 0.025;
   ros::param::get("/grid/sphere_radius", sphere_radius);
 
-  const int sphere_i[2] = {0, 0};
-  const int sphere_j[2] = {0, resolution[1] - 1};
+  const int sphere_i[2] = {0, resolution[0] - 1};
+  const int sphere_j[2] = {0, 0};
 
   GridState gridState(size, resolution, offset, sphere_radius, planning_scene_interfaces, robots, 2);
 
@@ -345,8 +305,10 @@ int main(int argc, char** argv)
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
 
-  std::thread t1(doDemo, std::ref(gridState), std::ref(robots[0]), 0, sphere_i[0], sphere_j[0], false, false);
-  doDemo(gridState, robots[1], 1, sphere_i[1], sphere_j[1], true, true);
+  GridDemo demo(NUM_ROBOTS);
+
+  std::thread t1(&GridDemo::doDemo, &demo, std::ref(gridState), std::ref(robots[0]), 0, sphere_i[0], sphere_j[0], false, false);
+  demo.doDemo(gridState, robots[1], 1, sphere_i[1], sphere_j[1], true, true);
 
   t1.join();
 

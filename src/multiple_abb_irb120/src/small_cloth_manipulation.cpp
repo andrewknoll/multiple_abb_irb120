@@ -81,21 +81,6 @@ const int NUM_ROBOTS = 2;
 
 using MGIPtr = std::shared_ptr <moveit::planning_interface::MoveGroupInterface>;
 
-geometry_msgs::Pose getAdjustedSpherePose(GridState& gridState, geometry_msgs::Point base_position, tf2::Quaternion o, int i, int j){
-  geometry_msgs::Pose target = gridState.getPose(i, j);
-
-  target.position.x -= base_position.x;
-  target.position.y -= base_position.y;
-  target.position.z -= base_position.z;
-
-  target.orientation.x = o.x();
-  target.orientation.y = o.y();
-  target.orientation.z = o.z();
-  target.orientation.w = o.w();
-
-  return target;
-}
-
 class SmallClothDemo {
 private:
   const double JUMP_THRESHOLD = 0.0;
@@ -152,7 +137,7 @@ public:
     move_group->setPlanningTime(10.0);
 
     initial = move_group->getCurrentPose().pose;
-    sphere_initial = getAdjustedSpherePose(gridState, robot.getBasePosition(), facing_down, sphere_i, sphere_j);
+    sphere_initial = utils::getAdjustedSpherePose(gridState.getPose(sphere_i, sphere_j), robot.getBasePosition(), facing_down);
     
     std::cout << "Robot " << robot_i + 1 << ": " << "Approaching sphere " << sphere_i << " " << sphere_j << "..." << std::endl;
 
@@ -161,11 +146,11 @@ public:
     //////////////////////////////////
     if(ros::ok()){
       do {
-        target = getAdjustedSpherePose(gridState, robot.getBasePosition(), facing_down, sphere_i, sphere_j);
+        target = utils::getAdjustedSpherePose(gridState.getPose(sphere_i, sphere_j), robot.getBasePosition(), facing_down);
         
         move_group->setPoseTarget(target);
         move_group->move();
-      } while(ros::ok() && !utils::isNear(move_group->getCurrentPose().pose, getAdjustedSpherePose(gridState, robot.getBasePosition(), facing_down, sphere_i, sphere_j), 0.03));
+      } while(ros::ok() && !utils::isNear(move_group->getCurrentPose().pose, utils::getAdjustedSpherePose(gridState.getPose(sphere_i, sphere_j), robot.getBasePosition(), facing_down), 0.03));
     }
     
     move_group->stop();

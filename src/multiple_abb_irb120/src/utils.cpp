@@ -2,7 +2,21 @@
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
 #include <geometry_msgs/Pose.h>
+#include <geometry_msgs/Point.h>
+#include <tf2/LinearMath/Quaternion.h>
 
+geometry_msgs::Pose utils::getAdjustedSpherePose(geometry_msgs::Pose sphereWorldPose, geometry_msgs::Point base_position, tf2::Quaternion orientation){
+  sphereWorldPose.position.x -= base_position.x;
+  sphereWorldPose.position.y -= base_position.y;
+  sphereWorldPose.position.z -= base_position.z;
+
+  sphereWorldPose.orientation.x = orientation.x();
+  sphereWorldPose.orientation.y = orientation.y();
+  sphereWorldPose.orientation.z = orientation.z();
+  sphereWorldPose.orientation.w = orientation.w();
+
+  return sphereWorldPose;
+}
 
 double utils::calculateInitialComponent(int index, double offset, double size, int resolution) {
     return offset + (resolution > 1 ? (double)(index - (double)(resolution - 1) / 2.0) * (size / (double)(resolution - 1)) : 0);

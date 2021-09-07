@@ -139,7 +139,6 @@ void GridState::updateMoveItObjects(){
 
                         if(grabbed[r] == HAS_TO_BE_GRABBED){
                             collision_object.operation = collision_object.REMOVE;
-                            grabbed[r] = GRABBED;
                         }
                         else if(grabbed[r] == HAS_TO_BE_RELEASED){
                             shape_msgs::SolidPrimitive primitive;
@@ -149,7 +148,6 @@ void GridState::updateMoveItObjects(){
 
                             collision_object.primitives.push_back(primitive);
                             collision_object.operation = collision_object.ADD;
-                            grabbed[r] = NOT_GRABBED;
                         }
                         else {
                             collision_object.operation = collision_object.MOVE;
@@ -157,6 +155,8 @@ void GridState::updateMoveItObjects(){
                         collision_objects[r].push_back(collision_object);
                     }
                 }
+                if(grabbed[r] == HAS_TO_BE_GRABBED) grabbed[r] = GRABBED;
+                else if(grabbed[r] == HAS_TO_BE_RELEASED) grabbed[r] = NOT_GRABBED;
             }
             applyCollisionObjects();
         }
