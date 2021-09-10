@@ -32,17 +32,6 @@ RobotInterface::RobotInterface(geometry_msgs::Point position, std::string planni
     ROS_INFO_NAMED("robot_interface", "Started robot in namespace: %s", ns.c_str());
 }
 
-void RobotInterface::shutdown(){
-    //up = false;
-    //publisherThread->join();
-    //delete node_handle;
-}
-
-RobotInterface::~RobotInterface(){
-    ROS_INFO_NAMED("robot_interface", "Shutting down robot in namespace: %s", ROBOT_NAMESPACE.c_str());
-    //shutdown();
-}
-
 void RobotInterface::publishEndEffectorPose(){
     try{
         endEffPublish  = std::make_shared<ros::Publisher>(node_handle->advertise<geometry_msgs::PoseStamped>("end_effector_pose", 1000));

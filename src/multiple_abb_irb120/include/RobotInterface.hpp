@@ -33,9 +33,7 @@ class RobotInterface{
 
 public:
     RobotInterface(geometry_msgs::Point position, std::string planning_group, std::string ns = "/");
-    ~RobotInterface();
     void executeTrajectory(moveit_msgs::RobotTrajectory t);
-    void shutdown();
 
     geometry_msgs::Point getBasePosition() const;
     
