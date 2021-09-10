@@ -54,6 +54,7 @@
 #include <ros/ros.h>
 
 #include "RobotInterface.hpp"
+#include "Demo.hpp"
 #include <chrono>
 
 #include <signal.h>
@@ -62,38 +63,55 @@
 #include <ros/console.h>
 #include <tf2/LinearMath/Quaternion.h>
 
-const int PI_5 = M_PI / 5;
-
-using MGIPtr = std::shared_ptr <moveit::planning_interface::MoveGroupInterface>;
+const int PI_2 = M_PI / 2;
 const std::string ROBOT_PREFIX = "robot";
 const std::string GROUP_NAME = "manipulator";
 
-void setup(RobotInterface& robot, int robot_i){
-  MGIPtr mgi = robot.getMoveGroup();
+using MGIPtr = std::shared_ptr <moveit::planning_interface::MoveGroupInterface>;
 
-  geometry_msgs::Pose pose = mgi->getCurrentPose().pose;
-  pose.position.z = sin(robot_i * PI_5) + 0.5;
+class RobotsWavingDemo : public Demo {
 
-  mgi->setPoseTarget(pose);
-  mgi->move();
-}
+private:
 
-void doDemo(RobotInterface& robot, int robot_i){
-  MGIPtr mgi = robot.getMoveGroup();
-  geometry_msgs::Pose up = mgi->getCurrentPose().pose;
-  up.position.z = 1.5;
-  geometry_msgs::Pose down = mgi->getCurrentPose().pose;
-  down.position.z = 0.5;
-  for(int i = 0; i < 10; i++){
-    if(i % 2 == 0){
-      mgi->setPoseTarget(up);
-    }
-    else{
-      mgi->setPoseTarget(down);
-    }
+  ros::NodeHandle n;
+  ros::Publisher grabPub;
+
+  void setup(RobotInterface& robot, int robot_i){
+    MGIPtr mgi = robot.getMoveGroup();
+
+    geometry_msgs::Pose pose = mgi->getCurrentPose().pose;
+    pose.position.z = sin(robot_i * PI_2) / 4.0 + 0.5;
+    std::cout << "Robot " << robot_i << " on " << pose.position.z << std::endl;
+
+    mgi->setPoseTarget(pose);
     mgi->move();
   }
-}
+
+  virtual void doDemo(RobotInterface& robot, int robot_i, int params, ...) override {
+    va_list args;
+    va_start(args, params);
+
+    MGIPtr mgi = robot.getMoveGroup();
+    geometry_msgs::Pose pose = mgi->getCurrentPose().pose;
+    for(int i = 0; i < 5; i++){
+      pose.position.z = sin((robot_i + i) * PI_2) / 4.0 + 0.5;
+
+      mgi->setPoseTarget(pose);
+      mgi->move();
+
+      syncRobots(robot_i, i + 1);
+    }
+  }
+
+public:
+  RobotsWavingDemo(int robots) : Demo(robots) {}
+
+  void execute(RobotInterface& robot, int robot_i){
+    setup(robot, robot_i);
+    if(!syncRobots(robot_i, 1)) return;
+    doDemo(robot, robot_i, 0);
+  }
+};
 
 int main(int argc, char** argv)
 {
@@ -107,36 +125,24 @@ int main(int argc, char** argv)
   ros::AsyncSpinner spinner(1);
   spinner.start();
 
-  int n = 0;
+  int n = -1;
+  ros::param::param<int>("~robots", n, -1);
 
-  if(argc < 2){
+  if(n < 0){
     ROS_ERROR("Usage: %s <number_of_robots>", argv[0]);
     return -1;
   }
-  else {
-    try{
-      int n = std::stoi(argv[1]);
-      if(n < 1){
-        return 0;
-      }
-    }
-    catch(std::invalid_argument& e){
-      ROS_ERROR("Usage: %s <number_of_robots>", argv[0]);
-      return -1;
-    }
-  }
 
   std::vector<RobotInterface> robots;
-  std::vector<geometry_msgs::Point> robot_bases;
-  std::vector<std::thread> threads_setup, threads;
+  std::vector<geometry_msgs::Point> robot_bases(n);
+  std::vector<std::thread> threads;
   
 
   for(int i = 0; i < n; i++){
-    geometry_msgs::Point robot_base;
-    robot_bases[i].x = i;
-    robot_bases[i].y = 0;
+    robot_bases[i].x = 0;
+    robot_bases[i].y = i;
     robot_bases[i].z = 0;
-    robots.push_back(RobotInterface(robot_base, GROUP_NAME, ROBOT_PREFIX + std::to_string(i + 1)));
+    robots.emplace_back(robot_bases[i], GROUP_NAME, ROBOT_PREFIX + std::to_string(i + 1));
   }
 
   std::this_thread::sleep_for(std::chrono::seconds(2));
@@ -144,24 +150,12 @@ int main(int argc, char** argv)
   //////////////////////////////////
   /////// SETUP ////////////////////
   //////////////////////////////////
-  for(int i = 1; i < n; i++){
-    threads_setup.push_back(std::thread(&setup, std::ref(robots[i-1]), i-1));
-  }
-  setup(robots[0], 0);
+  RobotsWavingDemo demo(n);
 
   for(int i = 1; i < n; i++){
-    threads_setup[i-1].join();
+    threads.push_back(std::thread(&RobotsWavingDemo::execute, &demo, std::ref(robots[i]), i));
   }
-
-
-
-  //////////////////////////////////
-  /////// DEMO /////////////////////
-  //////////////////////////////////
-  for(int i = 1; i < n; i++){
-    threads.push_back(std::thread(&doDemo, std::ref(robots[i-1]), i-1));
-  }
-  doDemo(robots[0], 0);
+  demo.execute(robots[0], 0);
 
   for(int i = 1; i < n; i++){
     threads[i-1].join();

@@ -53,6 +53,89 @@
 #include <moveit_msgs/CollisionObject.h>
 
 #include "RobotInterface.hpp"
+#include "Demo.hpp"
+
+class RobotsMovingDemo : public Demo {
+
+private:
+
+  ros::NodeHandle n;
+  ros::Publisher grabPub;
+
+  virtual void doDemo(RobotInterface& robot, int robot_i, int params, ...) override {
+    moveit_msgs::RobotTrajectory trajectory;
+
+    va_list args;
+    va_start(args, params);
+
+
+    // Start the demo
+    // ^^^^^^^^^^^^^^^^^^^^^^^^^
+    std::shared_ptr<moveit::planning_interface::MoveGroupInterface> move_group = robot.getMoveGroup();
+    geometry_msgs::Pose initial;
+    std::vector<geometry_msgs::Pose> targets(5);
+    int p;
+
+    std::cout << "Moving Robots to 4 points in a square..." << std::endl;
+
+    
+    move_group = robot.getMoveGroup();
+
+    //Get to the initial pose
+    // ^^^^^^^^^^^^^^^^^^^^^^^^^
+    move_group->setNamedTarget("demo_pose");
+    move_group->move();
+    initial = move_group->getCurrentPose().pose;
+
+    //Creating 4 positions in a square
+    // ^^^^^^^^^^^^^^^^^^^^^^^^^
+    for (int i = 0; i < 2; i++) { //Column
+      for (int j = 0; j < 2; j++) {
+        p = (i == 0 ? j : 3 - j);
+        targets[p].position.x = initial.position.x + (i == 0 ? -0.1 : 0.1);
+        targets[p].position.y = initial.position.y + (j == 1 ? -0.1 : 0.1);
+        targets[p].position.z = initial.position.z;
+
+        targets[p].orientation = initial.orientation;
+      }
+    }
+    //Assign the final position to the initial
+    // ^^^^^^^^^^^^^^^^^^^^^^^^^
+    targets[4] = targets[0];
+
+    //Moving to 4 objective positions
+    // ^^^^^^^^^^^^^^^^^^^^^^^^^
+    for (int p = 0; p < 4; p++) {
+      move_group->setPoseTarget(targets[p]);
+
+      move_group->move();
+    }
+
+    move_group->setPlanningTime(10.0);
+
+    //Making a square movement
+    // ^^^^^^^^^^^^^^^^^^^^^^^^^
+    double fraction = move_group->computeCartesianPath(targets, EEF_STEP, JUMP_THRESHOLD, trajectory);
+
+    moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+
+    my_plan.trajectory_ = trajectory;
+    move_group->execute(my_plan);
+
+    va_end(args);
+  }
+
+public:
+
+  RobotsMovingDemo() : Demo(2) {}
+
+  void execute(std::vector<RobotInterface> robots){
+    for (int i = 0; i < robots.size(); i++) {
+      doDemo(robots[i], i, 0);
+    }
+  }
+
+};
 
 void printJointValues(moveit::planning_interface::MoveGroupInterface &move_group) {
   std::vector<std::string> joint_names = move_group.getJoints();
@@ -90,65 +173,8 @@ int main(int argc, char **argv)
 
   std::vector<RobotInterface> robots = {RobotInterface(robot_bases[0], "manipulator", "robot1"), RobotInterface(robot_bases[1], "manipulator", "robot2")};
 
-  moveit_msgs::RobotTrajectory trajectory;
-  const double jump_threshold = 0.0;
-  const double eef_step = 0.01;
-
-  moveit::planning_interface::PlanningSceneInterface planning_scene_interface("/robot1");
-
-  // Start the demo
-  // ^^^^^^^^^^^^^^^^^^^^^^^^^
-  std::shared_ptr<moveit::planning_interface::MoveGroupInterface> move_group;
-  geometry_msgs::Pose initial;
-  std::vector<geometry_msgs::Pose> targets(5);
-  int p;
-
-  std::cout << "Moving Robots to 4 points in a square..." << std::endl;
-
-  for (auto robot : robots) {
-    move_group = robot.getMoveGroup();
-
-    //Get to the initial pose
-    // ^^^^^^^^^^^^^^^^^^^^^^^^^
-    move_group->setNamedTarget("demo_pose");
-    move_group->move();
-    initial = move_group->getCurrentPose().pose;
-
-    //Creating 4 positions in a square
-    // ^^^^^^^^^^^^^^^^^^^^^^^^^
-    for (int i = 0; i < 2; i++) { //Column
-      for (int j = 0; j < 2; j++) {
-        p = (i == 0 ? j : 3 - j);
-        targets[p].position.x = initial.position.x + (i == 0 ? -0.1 : 0.1);
-        targets[p].position.y = initial.position.y + (j == 1 ? -0.1 : 0.1);
-        targets[p].position.z = initial.position.z;
-
-        targets[p].orientation = initial.orientation;
-      }
-    }
-    //Assign the final position to the initial
-    // ^^^^^^^^^^^^^^^^^^^^^^^^^
-    targets[4] = targets[0];
-
-    //Moving to 4 objective positions
-    // ^^^^^^^^^^^^^^^^^^^^^^^^^
-    for (int p = 0; p < 4; p++) {
-      move_group->setPoseTarget(targets[p]);
-
-      move_group->move();
-    }
-
-    move_group->setPlanningTime(10.0);
-
-    //Making a square movement
-    // ^^^^^^^^^^^^^^^^^^^^^^^^^
-    double fraction = move_group->computeCartesianPath(targets, eef_step, jump_threshold, trajectory);
-
-    moveit::planning_interface::MoveGroupInterface::Plan my_plan;
-
-    my_plan.trajectory_ = trajectory;
-    move_group->execute(my_plan);
-  }
+  RobotsMovingDemo demo;
+  demo.execute(robots);
 
   ros::shutdown();
   return 0;

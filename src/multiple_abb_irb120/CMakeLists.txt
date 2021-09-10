@@ -153,21 +153,21 @@ add_dependencies(deformable_object_plugin ${catkin_EXPORTED_TARGETS})
 add_library(world_plugin SHARED src/WorldPlugin.cpp)
 target_link_libraries(world_plugin PUBLIC utils ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 
-add_executable(robots_moving_demo src/robots_moving_demo.cpp include/RobotInterface.hpp)
+add_executable(robots_moving_demo src/robots_moving_demo.cpp include/Demo.hpp)
 target_link_libraries(robots_moving_demo PUBLIC ${catkin_LIBRARIES} PUBLIC robot_interface)
 
 add_library(grid_state SHARED src/GridState.cpp include/GridState.hpp)
 target_link_libraries(grid_state PUBLIC utils ${GAZEBO_LIBRARIES} ${catkin_LIBRARIES})
 
-add_executable(grid_demo src/grid_demo.cpp)
+add_executable(grid_demo src/grid_demo.cpp include/Demo.hpp)
 target_link_libraries(grid_demo PUBLIC ${GAZEBO_LIBRARIES} PUBLIC ${catkin_LIBRARIES} PUBLIC robot_interface PUBLIC grid_state PUBLIC utils)
 add_dependencies(grid_demo ${catkin_EXPORTED_TARGETS})
 
-add_executable(grid_wave_demo src/grid_wave_demo.cpp)
+add_executable(grid_wave_demo src/grid_wave_demo.cpp include/Demo.hpp)
 target_link_libraries(grid_wave_demo PUBLIC ${GAZEBO_LIBRARIES} PUBLIC ${catkin_LIBRARIES} PUBLIC robot_interface PUBLIC grid_state PUBLIC utils)
 add_dependencies(grid_wave_demo ${catkin_EXPORTED_TARGETS})
 
-add_executable(robots_waving_demo src/robots_waving_demo.cpp)
+add_executable(robots_waving_demo src/robots_waving_demo.cpp include/Demo.hpp)
 target_link_libraries(robots_waving_demo PUBLIC PUBLIC ${catkin_LIBRARIES} PUBLIC robot_interface)
 
 add_executable(small_cloth_manipulation src/small_cloth_manipulation.cpp)
