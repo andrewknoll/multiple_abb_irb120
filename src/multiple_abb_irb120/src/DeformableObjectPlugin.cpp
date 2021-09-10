@@ -60,7 +60,7 @@ void DeformableObject::SphereGrasp::shutdown(){
   if(up){
     up = false;
     updater->join();
-    //sub.shutdown();
+    std::cout << "Sphere released." << std::endl;
   }
 }
 
