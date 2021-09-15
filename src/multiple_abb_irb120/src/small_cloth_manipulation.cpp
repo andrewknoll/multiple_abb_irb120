@@ -257,11 +257,11 @@ private:
       //////// Go drop object //////////
       //////////////////////////////////
       std::cout << "Robot " << robot_i + 1 << ": " << "Starting drop trajectory..." << std::endl;
-      waypoints[0].position.x = sphere_initial.position.x - 0.3;
+      waypoints[0].position.x = sphere_initial.position.x - 0.15;
       waypoints[0].position.y = sphere_initial.position.y;
       waypoints[0].position.z = sphere_initial.position.z + 0.2;
       
-      target.position.x = sphere_initial.position.x;
+      target.position.x = sphere_initial.position.x + 0.15;
       target.position.y = sphere_initial.position.y;
       target.position.z = sphere_initial.position.z;
 
