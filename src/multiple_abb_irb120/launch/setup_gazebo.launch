@@ -2,6 +2,7 @@
   <arg name="must_start_world" default="true"/>
 	<arg name="robots" default="2" doc="Number of robots to spawn" />
   <arg name="small" default="0" doc="Use small grid" />
+  <arg name="table" default="0" doc="Use table" />
 
   <!-- IMPORTANT: topics must be remapped before using this launchfile
   <remap from="/$(arg base_name)$(arg robots)/arm_controller/follow_joint_trajectory" to="/$(arg base_name)$(arg robots)/joint_trajectory_action" />
@@ -15,8 +16,9 @@
 
   <!-- startup simulated world -->
   <include if="$(arg must_start_world)" file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg unless="$(arg small)" name="world_name" value="$(find multiple_abb_irb120)/worlds/grid.world"/>
-    <arg if="$(arg small)" name="world_name" value="$(find multiple_abb_irb120)/worlds/small_grid.world"/>
+    <arg unless="$(eval arg('small') or arg('table'))" name="world_name" value="$(find multiple_abb_irb120)/worlds/grid.world"/>
+    <arg if="$(eval arg('small') and not arg('table'))" name="world_name" value="$(find multiple_abb_irb120)/worlds/small_grid.world"/>
+    <arg if="$(arg table)" name="world_name" value="$(find multiple_abb_irb120)/worlds/grid_table.world"/>
     <arg name="gui" value="true"/>
   </include>
 

@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <sdf version='1.6'>
   <world name='default'>
     <include>
@@ -9,7 +10,7 @@
     </include>
 
     <model name='table_marble'>
-      <pose frame=''>0.509210 0.867373 0.306610 0 -0 0</pose>
+      <pose frame=''>0.80071 0.53110 0.30661 0 -0 -1.57079</pose>
       <link name='link'>
         <gravity>0</gravity>
         <visual name='visual'>
