@@ -204,7 +204,8 @@ private:
       // Deform object
       //////////////////////////////////
       target = initial;
-      target.position.y += right ? 0.4 : -0.4;
+      target.position.y += right ? 0.3 : -0.3;
+      target.position.x -= 0.1;
 
       move_group->setPoseTarget(target);
       move_group->move();

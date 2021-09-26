@@ -10,7 +10,7 @@
     </include>
 
     <model name='table_marble'>
-      <pose frame=''>0.80071 0.53110 0.30661 0 -0 -1.57079</pose>
+      <pose frame=''>0.86 0.53110 0.30661 0 -0 -1.57079</pose>
       <link name='link'>
         <gravity>0</gravity>
         <visual name='visual'>
@@ -43,7 +43,7 @@
           <geometry>
             <mesh>
               <uri>model://table_marble/meshes/table_lightmap.dae</uri>
-              <scale>0.2 0.16 0.12</scale>
+              <scale>0.2 0.165 0.12</scale>
             </mesh>
           </geometry>
         </collision>
