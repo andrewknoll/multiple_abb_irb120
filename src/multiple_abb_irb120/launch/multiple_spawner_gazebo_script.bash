@@ -46,7 +46,7 @@ if [ "$#" -gt "3" ]; then
 fi
 
 if [ "$testing" -eq "1" ]; then
-    roslaunch "$dir/text_grid.launch"
+    roslaunch "$dir/test_grid.launch"
 else
 
     source "$dir/../../../devel/setup.bash"
