@@ -1,5 +1,7 @@
 ## Deformable object manipulation in multi-robot environments
 ### T.F.G. Andrés Otero García
+Read the Spanish memory of this undergraduate thesis following this link: \
+https://deposita.unizar.es/record/64356?ln=es
 
 #### Build
 ~~~
